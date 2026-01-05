@@ -15,12 +15,13 @@ public final class ChatFormatListener implements Listener {
     public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
-        if (player.hasMetadata("HydrogenPrefix")) {
-            String prefix = player.getMetadata("HydrogenPrefix").get(0).asString();
-            event.setFormat(prefix + "%s: %s");
-        } else {
-            event.setFormat("%s: %s");
-        }
+        // if (player.hasMetadata("HydrogenPrefix")) {
+        //     String prefix = player.getMetadata("HydrogenPrefix").get(0).asString();
+        //     event.setFormat(prefix + "%s: %s");
+        // } else {
+        //     event.setFormat("%s: %s");
+        // }
+        
     }
 
 }

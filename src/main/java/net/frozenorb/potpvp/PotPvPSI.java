@@ -11,7 +11,7 @@ import com.qrakn.morpheus.game.GameListeners;
 import com.qrakn.morpheus.game.GameQueue;
 import com.qrakn.morpheus.game.event.GameEvent;
 import mkremins.fanciful.FancyMessage;
-import net.frozenorb.hydrogen.Settings;
+// import net.frozenorb.hydrogen.Settings;
 import net.frozenorb.potpvp.morpheus.EventListeners;
 import net.frozenorb.potpvp.morpheus.EventTask;
 import net.frozenorb.potpvp.pvpclasses.PvPClassHandler;
@@ -39,10 +39,10 @@ import com.mongodb.client.MongoDatabase;
 
 import lombok.Getter;
 import net.frozenorb.chunksnapshot.ChunkSnapshot;
-import net.frozenorb.hydrogen.Hydrogen;
-import net.frozenorb.hydrogen.punishment.Punishment;
-import net.frozenorb.hydrogen.punishment.meta.PunishmentMeta;
-import net.frozenorb.hydrogen.punishment.meta.PunishmentMetaFetcher;
+// import net.frozenorb.hydrogen.Hydrogen;
+// import net.frozenorb.hydrogen.punishment.Punishment;
+// import net.frozenorb.hydrogen.punishment.meta.PunishmentMeta;
+// import net.frozenorb.hydrogen.punishment.meta.PunishmentMetaFetcher;
 import net.frozenorb.potpvp.arena.ArenaHandler;
 import net.frozenorb.potpvp.duel.DuelHandler;
 import net.frozenorb.potpvp.elo.EloHandler;
@@ -119,11 +119,11 @@ public final class PotPvPSI extends JavaPlugin {
     @Override
     public void onEnable() {
         //SpigotConfig.onlyCustomTab = true; // because we'll definitely forget
-        //this.dominantColor = ChatColor.DARK_PURPLE;
+        this.dominantColor = ChatColor.DARK_PURPLE;
         instance = this;
         saveDefaultConfig();
 
-        Settings.setClean(true);
+//        Settings.setClean(true);
 
         setupMongo();
 
@@ -166,7 +166,7 @@ public final class PotPvPSI extends JavaPlugin {
         followHandler = new FollowHandler();
         eloHandler = new EloHandler();
         pvpClassHandler = new PvPClassHandler();
-        //tournamentHandler = new TournamentHandler();
+        tournamentHandler = new TournamentHandler();
 
         new Morpheus(this); // qrakn game events
         new EventTask().runTaskTimerAsynchronously(this, 1L, 1L);
@@ -195,21 +195,21 @@ public final class PotPvPSI extends JavaPlugin {
         FrozenNametagHandler.registerProvider(new PotPvPNametagProvider());
         FrozenScoreboardHandler.setConfiguration(PotPvPScoreboardConfiguration.create());
 
-        Hydrogen.getInstance().getPunishmentHandler().registerMetaFetcher(new PunishmentMetaFetcher(PotPvPSI.getInstance()) {
+        // Hydrogen.getInstance().getPunishmentHandler().registerMetaFetcher(new PunishmentMetaFetcher(PotPvPSI.getInstance()) {
             
-            @Override
-            public PunishmentMeta fetch(UUID target) {
-                return PunishmentMeta.of(ImmutableMap.of());
-            }
+        //     @Override
+        //     public PunishmentMeta fetch(UUID target) {
+        //         return PunishmentMeta.of(ImmutableMap.of());
+        //     }
 
-            @Override
-            public PunishmentMeta fetch(UUID target, Punishment.PunishmentType type) {
-                // now we reset elo :^)
-                if (type == Punishment.PunishmentType.BLACKLIST || type == Punishment.PunishmentType.BAN) eloHandler.resetElo(target);
-                return fetch(target);
-            }
+        //     @Override
+        //     public PunishmentMeta fetch(UUID target, Punishment.PunishmentType type) {
+        //         // now we reset elo :^)
+        //         if (type == Punishment.PunishmentType.BLACKLIST || type == Punishment.PunishmentType.BAN) eloHandler.resetElo(target);
+        //         return fetch(target);
+        //     }
             
-        });
+        // });
     }
 
     @Override
