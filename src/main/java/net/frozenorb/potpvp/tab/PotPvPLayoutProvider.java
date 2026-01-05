@@ -23,35 +23,21 @@ public final class PotPvPLayoutProvider implements LayoutProvider {
     private final BiConsumer<Player, TabLayout> lobbyLayoutProvider = new LobbyLayoutProvider();
     private final BiConsumer<Player, TabLayout> matchSpectatorLayoutProvider = new MatchSpectatorLayoutProvider();
     private final BiConsumer<Player, TabLayout> matchParticipantLayoutProvider = new MatchParticipantLayoutProvider();
-    private final BiConsumer<Player, TabLayout> onlinePlayersLayoutProvider = new OnlinePlayersLayoutProvider();
-    private final BiConsumer<Player, TabLayout> alternateOnlinePlayersLayoutProvider = new AlternateOnlinePlayersLayoutProvider();
 
     @Override
     public TabLayout provide(Player player) {
-        if (PotPvPSI.getInstance() == null) return TabLayout.create(player);
-        TabLayout tabLayout = TabLayout.create(player);
-
-        /*if (PotPvPSI.getInstance().getDominantColor() == ChatColor.LIGHT_PURPLE) {
-            alternateOnlinePlayersLayoutProvider.accept(player, tabLayout);
-        } else {
-            /*Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlayingOrSpectating(player);
-            headerLayoutProvider.accept(player, tabLayout);
-
-            if (match != null) {
-                if (match.isSpectator(player.getUniqueId())) {
-                    matchSpectatorLayoutProvider.accept(player, tabLayout);
-                } else {
-                    matchParticipantLayoutProvider.accept(player, tabLayout);
-                }
+        Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlayingOrSpectating(player);
+        TabLayout tabLayout = TabLayout.create((Player)player);
+        this.headerLayoutProvider.accept(player, tabLayout);
+        if (match != null) {
+            if (match.isSpectator(player.getUniqueId())) {
+                this.matchSpectatorLayoutProvider.accept(player, tabLayout);
             } else {
-                lobbyLayoutProvider.accept(player, tabLayout);
+                this.matchParticipantLayoutProvider.accept(player, tabLayout);
             }
-
-            onlinePlayersLayoutProvider.accept(player, tabLayout);
-        }*/
-
-        onlinePlayersLayoutProvider.accept(player, tabLayout);
-
+        } else {
+            this.lobbyLayoutProvider.accept(player, tabLayout);
+        }
         return tabLayout;
     }
 

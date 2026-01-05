@@ -31,9 +31,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
-import net.frozenorb.hydrogen.Hydrogen;
-import net.frozenorb.hydrogen.profile.Profile;
-import net.frozenorb.hydrogen.profile.ProfileHandler;
+// import net.frozenorb.hydrogen.Hydrogen;
+// import net.frozenorb.hydrogen.profile.Profile;
+// import net.frozenorb.hydrogen.profile.ProfileHandler;
 import net.frozenorb.potpvp.PotPvPSI;
 
 public final class BasicPreventionListener implements Listener {
@@ -42,23 +42,24 @@ public final class BasicPreventionListener implements Listener {
     public void onPlayerLogin(PlayerLoginEvent event) {
         // if we have a whitelist we probably are manually
         // controlling who can log in and don't need this
-        if (true || Bukkit.hasWhitelist()) {
-            return;
-        }
+        
+        // if (true || Bukkit.hasWhitelist()) {
+        //     return;
+        // }
 
-        ProfileHandler profileHandler = Hydrogen.getInstance().getProfileHandler();
-        Optional<Profile> profileOpt = profileHandler.getProfile(event.getPlayer().getUniqueId());
+        // ProfileHandler profileHandler = Hydrogen.getInstance().getProfileHandler();
+        // Optional<Profile> profileOpt = profileHandler.getProfile(event.getPlayer().getUniqueId());
 
-        boolean allowed = false;
+        // boolean allowed = false;
 
-        if (profileOpt.isPresent()) {
-            Map<String, Boolean> perms = profileOpt.get().getPermissions();
-            allowed = perms.getOrDefault("potpvp.vip", false);
-        }
+        // if (profileOpt.isPresent()) {
+        //     Map<String, Boolean> perms = profileOpt.get().getPermissions();
+        //     allowed = perms.getOrDefault("potpvp.vip", false);
+        // }
 
-        if (!allowed) {
-            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.DARK_PURPLE + "PotPvP is VIP-only for testing");
-        }
+        // if (!allowed) {
+        //     event.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.DARK_PURPLE + "PotPvP is VIP-only for testing");
+        // }
     }
 
     @EventHandler

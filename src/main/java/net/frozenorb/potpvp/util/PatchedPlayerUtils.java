@@ -1,8 +1,8 @@
 package net.frozenorb.potpvp.util;
 
-import net.frozenorb.hydrogen.Hydrogen;
-import net.frozenorb.hydrogen.profile.Profile;
-import net.frozenorb.hydrogen.rank.Rank;
+// import net.frozenorb.hydrogen.Hydrogen;
+// import net.frozenorb.hydrogen.profile.Profile;
+// import net.frozenorb.hydrogen.rank.Rank;
 import net.frozenorb.qlib.util.UUIDUtils;
 
 import org.bukkit.GameMode;
@@ -60,10 +60,10 @@ public class PatchedPlayerUtils {
     }
 
     public static String getFormattedName(UUID uuid) {
-        Optional<Profile> profileOptional = Hydrogen.getInstance().getProfileHandler().getProfile(uuid);
-        if (profileOptional.isPresent()) {
-            return profileOptional.get().getBestDisplayRank().getGameColor() + UUIDUtils.name(uuid);
-        } else {
+        // Optional<Profile> profileOptional = Hydrogen.getInstance().getProfileHandler().getProfile(uuid);
+        // if (profileOptional.isPresent()) {
+        //     return profileOptional.get().getBestDisplayRank().getGameColor() + UUIDUtils.name(uuid);
+        // } else {
             
             return UUIDUtils.name(uuid);
             
@@ -82,6 +82,6 @@ public class PatchedPlayerUtils {
 
             return toDisplay.getGameColor() + UUIDUtils.name(uuid);
             */
-        }
+        // }
     }
 }

@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 
 import com.google.common.collect.Lists;
 
-import net.frozenorb.hydrogen.Hydrogen;
-import net.frozenorb.hydrogen.profile.Profile;
+// import net.frozenorb.hydrogen.Hydrogen;
+// import net.frozenorb.hydrogen.profile.Profile;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.elo.EloHandler;
 import net.frozenorb.potpvp.kittype.KitType;
@@ -55,10 +55,11 @@ public class PlayerButton extends Button {
     }
 
     private String getColoredName(Player player) {
-        Optional<Profile> profileOptional = Hydrogen.getInstance().getProfileHandler().getProfile(player.getUniqueId());
-        if (profileOptional.isPresent()) {
-            return profileOptional.get().getBestDisplayRank().getGameColor() + player.getName();
-        }
+
+        // Optional<Profile> profileOptional = Hydrogen.getInstance().getProfileHandler().getProfile(player.getUniqueId());
+        // if (profileOptional.isPresent()) {
+        //     return profileOptional.get().getBestDisplayRank().getGameColor() + player.getName();
+        // }
 
         return player.getName();
     }
