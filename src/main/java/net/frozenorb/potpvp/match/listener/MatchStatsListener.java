@@ -1,7 +1,6 @@
 package net.frozenorb.potpvp.match.listener;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -19,6 +18,20 @@ import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.match.Match;
 
 public class MatchStatsListener implements Listener {
+    private static final Set<Short> HEALTH_POTS = new HashSet<>(Arrays.asList(
+        (short) 16385, // splash health I
+        (short) 16421  // splash health II
+    ));
+
+    private static final Set<Short> DEBUFF_POTS = new HashSet<>(Arrays.asList(
+        (short) 16388, // splash harm I
+        (short) 16426, // splash harm II
+        (short) 16424, // weakness
+        (short) 16428, // slowness
+        (short) 16458, // poison
+        (short) 16420  // wither / custom
+    ));
+
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
@@ -66,30 +79,71 @@ public class MatchStatsListener implements Listener {
         Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(player);
 
         if (match == null) return;
-        match.getMissedPots().put(player.getUniqueId(), match.getMissedPots().getOrDefault(player.getUniqueId(), 0) + 1);
+
+        short durability = thrownPotion.getItem().getDurability();
+        UUID uuid = player.getUniqueId();
+
+        // calculation for different types of potions
+        // If splash, then simply apply it as 'miss'
+
+        if (HEALTH_POTS.contains(durability)) {
+            match.getMissedPots().put(uuid, match.getMissedPots().getOrDefault(uuid, 0) + 1);
+            match.getThrownHp().put(uuid, match.getThrownHp().getOrDefault(uuid, 0.0D) + 1.0D);
+            match.getMissedHp().put(uuid, match.getMissedHp().getOrDefault(uuid, 0.0D) + 1.0D);
+        } else if(DEBUFF_POTS.contains(durability)){
+            match.getThrownDebuffs().put(uuid, match.getThrownDebuffs().getOrDefault(uuid, 0.0D) + 1.0D);
+            match.getMissedDebuffs().put(uuid, match.getMissedDebuffs().getOrDefault(uuid, 0.0D) + 1.0D);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSplash(PotionSplashEvent event) {
         ThrownPotion thrownPotion = event.getEntity();
 
-        if (thrownPotion.getItem().getDurability() != 16421) return; // now we know it's a health pot!
+//        if (thrownPotion.getItem().getDurability() != 16421) return; // now we know it's a health pot!
 
         ProjectileSource projectileSource = thrownPotion.getShooter();
         if (!(projectileSource instanceof Player)) return;
 
-        Player player = (Player) projectileSource;
-        Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(player);
+        Player shooter = (Player) projectileSource;
+        UUID shooterUid = shooter.getUniqueId();
+        short durability = thrownPotion.getItem().getDurability();
+
+        Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(shooter);
 
         if (match == null) return;
 
-        for (LivingEntity affectedEntity : event.getAffectedEntities()) {
-            if (!affectedEntity.getUniqueId().equals(player.getUniqueId())) continue;
+//        for (LivingEntity affectedEntity : event.getAffectedEntities()) {
+//            if (!affectedEntity.getUniqueId().equals(shooter.getUniqueId())) continue;
+//
+//            if (event.getIntensity(affectedEntity) == 1.0D) {
+//                match.getMissedPots().put(shooter.getUniqueId(), Math.max(match.getMissedPots().getOrDefault(shooter.getUniqueId(), 1) - 1, 0));
+//            }
+//        }
 
-            if (event.getIntensity(affectedEntity) == 1.0D) {
-                match.getMissedPots().put(player.getUniqueId(), Math.max(match.getMissedPots().getOrDefault(player.getUniqueId(), 1) - 1, 0));
+        if (HEALTH_POTS.contains(durability)) {
+             if (event.getIntensity(shooter) > 0.6D) { // cancel miss
+                match.getMissedPots().put(
+                        shooterUid,
+                        Math.max(match.getMissedPots().getOrDefault(shooterUid, 1) - 1, 0)
+                );
+             }
+             match.getMissedHp().put( // calculation splash accuracy
+                     shooterUid,
+                     Math.max(match.getMissedHp().getOrDefault(shooterUid, 1.0D) - event.getIntensity(shooter), 0.0D)
+             );
+        } else if(DEBUFF_POTS.contains(durability)){
+            for (LivingEntity affectedEntity : event.getAffectedEntities()) {
+                for (UUID u : match.getTeam(shooterUid).getAliveMembers()) {
+                     if (affectedEntity.getUniqueId() != u) {
+                         match.getMissedDebuffs().put(
+                                 shooterUid,
+                                 Math.max(match.getMissedDebuffs().getOrDefault(shooterUid, 1.0D) - event.getIntensity((Player)affectedEntity), 0.0D)
+                         );
+                     }
+                }
             }
-        }
+          }
     }
 /*
     @EventHandler(priority = EventPriority.MONITOR)

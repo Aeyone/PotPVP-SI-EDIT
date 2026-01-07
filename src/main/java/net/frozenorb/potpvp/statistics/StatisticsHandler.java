@@ -60,18 +60,25 @@ public class StatisticsHandler implements Listener {
     }
     
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onMatchEnd(MatchTerminateEvent event) {
+    public void onMatchEnd(MatchTerminateEvent event) {// if cancel match end delay, maybe create null
         Match match = event.getMatch();
 
-        if (match.getKitType().equals(KitType.teamFight)) return;
+        if (match == null) return;
+
+        KitType kitType = match.getKitType();
+        if (kitType == null || kitType.equals(KitType.teamFight)) return;
         
-        match.getWinningPlayers().forEach(uuid -> {
-            incrementStat(uuid, Statistic.WINS, match.getKitType());
-        });
-        
-        match.getLosingPlayers().forEach(uuid -> {
-            incrementStat(uuid, Statistic.LOSSES, match.getKitType());
-        });
+        if (match.getWinningPlayers() != null) {
+            for (UUID uuid : match.getWinningPlayers()) {
+                if (uuid != null) incrementStat(uuid, Statistic.WINS, kitType);
+            }
+        }
+
+        if (match.getLosingPlayers() != null) {
+            for (UUID uuid : match.getLosingPlayers()) {
+                if (uuid != null) incrementStat(uuid, Statistic.LOSSES, kitType);
+            }
+        }
     }
     
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -208,7 +215,9 @@ public class StatisticsHandler implements Listener {
 
     private void incrementEntry(UUID uuid, String primaryKey, Statistic statistic) {
         Map<Statistic, Double> subMap = statisticsMap.get(uuid).get(primaryKey);
-        subMap.put(statistic, subMap.getOrDefault(statistic, 0D) + 1);
+        if (subMap != null) {
+            subMap.put(statistic, subMap.getOrDefault(statistic, 0D) + 1);
+        }
     }
 
     public double getStat(UUID uuid, Statistic statistic, String kitType) {

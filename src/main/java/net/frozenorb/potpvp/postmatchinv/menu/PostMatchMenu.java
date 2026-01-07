@@ -71,10 +71,30 @@ public final class PostMatchMenu extends Menu {
 
         if (healingMethod != null) {
             int count = healingMethod.count(targetInv.toArray(new ItemStack[targetInv.size()]));
-            buttons.put(getSlot(position++, y), new PostMatchHealsLeftButton(target.getPlayerUuid(), healingMethod, count, target.getMissedPots()));
+            buttons.put(
+                    getSlot(position++, y),
+                    new PostMatchHealsLeftButton(
+                        target.getPlayerUuid(),
+                        healingMethod,
+                        count,
+                        target.getMissedPots()
+                    )
+            );
         }
 
-        buttons.put(getSlot(position++, y), new PostMatchStatisticsButton(target.getTotalHits(), target.getLongestCombo()));
+        buttons.put(
+                getSlot(position++, y),
+                new PostMatchStatisticsButton(
+                        target.getKitType(),
+                        target.getHealingMethodUsed(),
+                        target.getTotalHits(),
+                        target.getLongestCombo(),
+                        target.getThrownHp(),
+                        target.getMissedHp(),
+                        target.getThrownDebuffs(),
+                        target.getMissedDebuffs()
+                )
+        );
         // swap to other player button (for 1v1s)
         PostMatchInvHandler postMatchInvHandler = PotPvPSI.getInstance().getPostMatchInvHandler();
         Collection<PostMatchPlayer> postMatchPlayers = postMatchInvHandler.getPostMatchData(player.getUniqueId()).values();

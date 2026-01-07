@@ -1,6 +1,10 @@
 package net.frozenorb.potpvp.match.listener;
 
+import net.frozenorb.qlib.command.Command;
+import net.frozenorb.qlib.command.Param;
 import net.frozenorb.qlib.util.ItemBuilder;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,4 +36,21 @@ public final class GoldenHeadListener implements Listener {
         return GOLDEN_HEAD.isSimilar(item);
     }
 
+    @Command(names = "givemehead", permission = "op")
+    public static void giveMeHead(Player sender, @Param(name = "integer") int amount) {
+
+        if (amount <= 0) {
+            sender.sendMessage(ChatColor.RED.toString() + amount + " is less than one!");
+            return;
+        }
+
+        ItemStack heads = GOLDEN_HEAD.clone();
+        heads.setAmount(amount);
+
+        sender.getInventory().addItem(heads);
+        sender.updateInventory();
+
+        sender.sendMessage(ChatColor.GREEN + "Successfully given " + amount + " Golden Head" + (amount != 1 ? "s" : "") + "!");
+        return;
+    }
 }

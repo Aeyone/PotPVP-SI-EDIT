@@ -119,7 +119,17 @@ public final class Match {
     private Map<UUID, Integer> longestCombo = Maps.newHashMap();
     @Getter
     private Map<UUID, Integer> missedPots = Maps.newHashMap();
-    
+
+    @Getter
+    private Map<UUID, Double> thrownHp = Maps.newHashMap();
+    @Getter
+    private Map<UUID, Double> missedHp = Maps.newHashMap();
+    @Getter
+    private Map<UUID, Double> thrownDebuffs = Maps.newHashMap();
+    @Getter
+    private Map<UUID, Double> missedDebuffs = Maps.newHashMap();
+
+
     @Getter
     private List<ReplayableAction> replayableActions = Lists.newArrayList();
     
@@ -247,7 +257,21 @@ public final class Match {
                         continue;
                     Player player = Bukkit.getPlayer(playerUuid);
                     
-                    postMatchPlayers.computeIfAbsent(playerUuid, v -> new PostMatchPlayer(player, kitType.getHealingMethod(), totalHits.getOrDefault(player.getUniqueId(), 0), longestCombo.getOrDefault(player.getUniqueId(), 0), missedPots.getOrDefault(player.getUniqueId(), 0)));
+                    postMatchPlayers.computeIfAbsent(
+                            playerUuid,
+                            v -> new PostMatchPlayer(
+                                player,
+                                kitType,
+                                kitType.getHealingMethod(),
+                                totalHits.getOrDefault(player.getUniqueId(), 0),
+                                longestCombo.getOrDefault(player.getUniqueId(), 0),
+                                missedPots.getOrDefault(player.getUniqueId(), 0),
+                                thrownHp.getOrDefault(player.getUniqueId(), 0.0D),
+                                missedHp.getOrDefault(player.getUniqueId(), 0.0D),
+                                thrownDebuffs.getOrDefault(player.getUniqueId(), 0.0D),
+                                missedDebuffs.getOrDefault(player.getUniqueId(), 0.0D)
+                            )
+                    );
                 }
             }
             
@@ -258,8 +282,11 @@ public final class Match {
         
         int delayTicks = MATCH_END_DELAY_SECONDS * 20;
         if (JavaPlugin.getProvidingPlugin(this.getClass()).isEnabled()) {
+            // cancel match end delay
+            Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), ()->Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this)), 1);
             Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), this::terminateMatch, delayTicks);
         } else {
+            Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this));
             this.terminateMatch();
         }
     }
@@ -287,8 +314,6 @@ public final class Match {
         
         this.winningPlayers = winner.getAllMembers();
         this.losingPlayers = teams.stream().filter(team -> team != winner).flatMap(team -> team.getAllMembers().stream()).collect(Collectors.toSet());
-        
-        Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this));
         
         // we have to make a few edits to the document so we use Gson (which has
         // adapters
@@ -472,7 +497,21 @@ public final class Match {
         team.markDead(player.getUniqueId());
         playingCache.remove(player.getUniqueId());
         
-        postMatchPlayers.put(player.getUniqueId(), new PostMatchPlayer(player, kitType.getHealingMethod(), totalHits.getOrDefault(player.getUniqueId(), 0), longestCombo.getOrDefault(player.getUniqueId(), 0), missedPots.getOrDefault(player.getUniqueId(), 0)));
+        postMatchPlayers.put(
+                player.getUniqueId(),
+                new PostMatchPlayer(
+                        player,
+                        kitType,
+                        kitType.getHealingMethod(),
+                        totalHits.getOrDefault(player.getUniqueId(), 0),
+                        longestCombo.getOrDefault(player.getUniqueId(), 0),
+                        missedPots.getOrDefault(player.getUniqueId(), 0),
+                        thrownHp.getOrDefault(player.getUniqueId(), 0.0D),
+                        missedHp.getOrDefault(player.getUniqueId(), 0.0D),
+                        thrownDebuffs.getOrDefault(player.getUniqueId(), 0.0D),
+                        missedDebuffs.getOrDefault(player.getUniqueId(), 0.0D)
+                )
+        );
         checkEnded();
     }
     
