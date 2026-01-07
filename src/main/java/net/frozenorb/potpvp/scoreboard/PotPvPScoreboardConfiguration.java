@@ -14,7 +14,7 @@ public final class PotPvPScoreboardConfiguration {
     public static ScoreboardConfiguration create() {
         ScoreboardConfiguration configuration = new ScoreboardConfiguration();
 
-        configuration.setTitleGetter(TitleGetter.forStaticString("&cVeltPvP &7(Practice)"));
+        configuration.setTitleGetter(TitleGetter.forStaticString("&6&lMineHQ &7&l⏐ &fPractice"));
         configuration.setScoreGetter(new MultiplexingScoreGetter(
             new MatchScoreGetter(),
             new LobbyScoreGetter(),

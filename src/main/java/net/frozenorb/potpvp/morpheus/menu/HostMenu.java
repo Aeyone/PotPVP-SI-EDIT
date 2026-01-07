@@ -12,7 +12,7 @@ import java.util.Map;
 public class HostMenu extends Menu {
 
     public HostMenu() {
-        super(ChatColor.DARK_PURPLE + "Host an event");
+        super(ChatColor.GOLD + "Host an event");
     }
 
     @Override

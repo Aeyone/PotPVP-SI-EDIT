@@ -101,7 +101,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         // they're not in a match
         if (match == null) {
             if (followingOpt.isPresent()) {
-                scores.add("&5Following: *&7" + UUIDUtils.name(followingOpt.get()));
+                scores.add("&6Following: *&f" + UUIDUtils.name(followingOpt.get()));
             }
 
             if (AutoRebootHandler.isRebooting()) {
@@ -136,7 +136,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         // check (we can't define the lambda up top and reference because we reference the
         // scores variable)
         if (followingOpt.isPresent()) {
-            scores.add("&5Following: *&7" + UUIDUtils.name(followingOpt.get()));
+            scores.add("&6Following: *&f" + UUIDUtils.name(followingOpt.get()));
         }
 
         if (AutoRebootHandler.isRebooting()) {
@@ -198,8 +198,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
     }
 
     private void render1v1MatchLines(List<String> scores, MatchTeam otherTeam) {
-        scores.add("&cOpponent: &f" + FrozenUUIDCache.name(otherTeam.getFirstMember()));
-        
+        scores.add("&c&lOpponent: &f" + FrozenUUIDCache.name(otherTeam.getFirstMember()));
     }
 
     private void render2v2MatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam, Player player, HealingMethod healingMethod) {
@@ -269,7 +268,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
             scores.add("&b");
         }
 
-        scores.add("&cOpponents");
+        scores.add("&c&lOpponents");
         scores.addAll(renderTeamMemberOverviewLines(otherTeam));
 
         // Removes the space
@@ -283,7 +282,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         scores.add("&aTeam &a(" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size() + ")");
         scores.addAll(renderTeamMemberOverviewLinesWithHearts(ourTeam));
         scores.add("&b");
-        scores.add("&cOpponents &c(" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size() + ")");
+        scores.add("&c&lOpponents &c(" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size() + ")");
         scores.addAll(renderTeamMemberOverviewLines(otherTeam));
         if (PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(Bukkit.getPlayer(ourTeam.getFirstAliveMember())).getState() == MatchState.IN_PROGRESS) {
             scores.add("&c");
@@ -295,13 +294,13 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         scores.add("&aTeam &a(" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size() + ")");
         scores.addAll(renderTeamMemberOverviewLinesWithHearts(ourTeam));
         scores.add("&b");
-        scores.add("&cOpponents: &f" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size());
+        scores.add("&c&lOpponents: &f" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size());
     }
 
     private void renderJumboMatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam) {
         // We just display numbers.
         scores.add("&aTeam: &f" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size());
-        scores.add("&cOpponents: &f" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size());
+        scores.add("&c&lOpponents: &f" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size());
     }
 
     private void renderSpectatorLines(List<String> scores, Match match, MatchTeam oldTeam) {
@@ -319,7 +318,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
                 // spectators who were on a team see teams as they releate
                 // to them, not just one/two.
                 if (oldTeam == null) {
-                    scores.add("&5Team One: &f" + teamOne.getAliveMembers().size() + "/" + teamOne.getAllMembers().size());
+                    scores.add("&dTeam One: &f" + teamOne.getAliveMembers().size() + "/" + teamOne.getAllMembers().size());
                     scores.add("&bTeam Two: &f" + teamTwo.getAliveMembers().size() + "/" + teamTwo.getAllMembers().size());
                 } else {
                     MatchTeam otherTeam = oldTeam == teamOne ? teamTwo : teamOne;
@@ -351,7 +350,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         }
 
         // spectators don't have any bold entries on their scoreboard
-        scores.add(PotPvPSI.getInstance().getDominantColor() + "&7Duration: &f" + formattedDuration);
+        scores.add(PotPvPSI.getInstance().getDominantColor() + (participant ? "&l" : "") + "Duration: &f" + formattedDuration);
     }
 
     private void renderPingLines(List<String> scores, Match match, Player ourPlayer) {
@@ -366,10 +365,10 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
 
             if (firstTeamPlayers.size() == 1 && secondTeamPlayers.size() == 1) {
                 scores.add("&7&b&4"); // spaceer
-                scores.add("&5Your Ping: &7" + PlayerUtils.getPing(ourPlayer));
+                scores.add("&6Your Ping: &f" + PlayerUtils.getPing(ourPlayer));
                 Player otherPlayer = Bukkit.getPlayer(match.getTeam(ourPlayer.getUniqueId()) == firstTeam ? secondTeam.getFirstMember() : firstTeam.getFirstMember());
                 if (otherPlayer == null) return;
-                scores.add("&5Their Ping: &7" + PlayerUtils.getPing(otherPlayer));
+                scores.add("&6Their Ping: &f" + PlayerUtils.getPing(otherPlayer));
             }
         }
     }

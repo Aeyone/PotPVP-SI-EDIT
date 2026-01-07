@@ -17,7 +17,7 @@ import java.util.*;
 public class EventsMenu extends Menu {
 
     public EventsMenu() {
-        super(ChatColor.DARK_PURPLE + "Join an event");
+        super(ChatColor.GOLD + "Join an event");
         setAutoUpdate(true);
     }
 

@@ -17,10 +17,14 @@ final class HeaderLayoutProvider implements BiConsumer<Player, TabLayout> {
     @Override
     public void accept(Player player, TabLayout tabLayout) {
         MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
-        tabLayout.set(1, 0, ChatColor.GOLD.toString() + ChatColor.BOLD + "Practice" + ChatColor.GRAY + "");
-        tabLayout.set(0, 1, ChatColor.GRAY + "Online: " + Bukkit.getOnlinePlayers().size());
-        tabLayout.set(1, 1, ChatColor.GRAY + "Your Connection", PlayerUtils.getPing((Player)player));
-        tabLayout.set(2, 1, ChatColor.GRAY + "In Fights: " + matchHandler.countPlayersPlayingInProgressMatches());
+        header: {
+            tabLayout.set(1, 0, ChatColor.GOLD.toString() + ChatColor.BOLD + "Practice");
+        }
+        status: {
+            tabLayout.set(0, 1, ChatColor.GRAY + "Online: " + Bukkit.getOnlinePlayers().size());
+            tabLayout.set(1, 1, ChatColor.GRAY + "Your Connection", PlayerUtils.getPing(player));
+            tabLayout.set(2, 1, ChatColor.GRAY + "In Fights: " + matchHandler.countPlayersPlayingInProgressMatches());
+        }
         /*
         status: {
             tabLayout.set(1, 1, ChatColor.GRAY + "Your Connection", Math.max(((PlayerUtils.getPing(player) + 5) / 10) * 10, 1));

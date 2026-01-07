@@ -21,7 +21,7 @@ public class HostParametersMenu extends Menu {
     private final List<HostParameterButton> buttons = new ArrayList<>();
 
     public HostParametersMenu(GameEvent event) {
-        super(ChatColor.DARK_PURPLE + event.getName() + " options");
+        super(ChatColor.GOLD + event.getName() + " options");
         setUpdateAfterClick(true);
         setPlaceholder(true);
 

@@ -78,7 +78,7 @@ public class TournamentHandler implements Listener {
         }
 
         Bukkit.broadcastMessage("");
-        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&7A &c&ltournament&7 has started. Type &5/join&7 to play. (0/" + (teamSize < 3 ? teamSize * requiredTeams : requiredTeams) + ")"));
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&7A &6&ltournament&7 has started. Type &6/join&7 to play. (0/" + (teamSize < 3 ? teamSize * requiredTeams : requiredTeams) + ")"));
         Bukkit.broadcastMessage("");
 
         Tournament tournament;
@@ -200,7 +200,7 @@ public class TournamentHandler implements Listener {
         }
 
         Bukkit.broadcastMessage("");
-        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&7The &c&ltournament&7 was &ccancelled."));
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&7The &6&ltournament&7 was &ccancelled."));
         Bukkit.broadcastMessage("");
         instance.setTournament(null);
     }

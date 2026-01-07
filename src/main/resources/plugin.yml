@@ -1,6 +1,6 @@
-name: PotPvP
-version: ${git.commit.id.abbrev}
-author: Aeyone
+name: MineHQ-Practice
+version: 1.0.1
+author: A_Eyone
 main: net.frozenorb.potpvp.PotPvPSI
 depend: [ qLib ]
 softdepend: [ Basic, AntiCheat ]

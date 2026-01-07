@@ -33,7 +33,7 @@ import redis.clients.jedis.Jedis;
 public final class RankedMatchQualificationListener implements Listener {
 
     public static final String KEY_PREFIX = "potpvp:rankedMatchQualification:";
-    public static final int MIN_MATCH_WINS = 10;
+    public static final int MIN_MATCH_WINS = 20;
     private static final Map<UUID, Integer> rankedMatchQualificationWins = new ConcurrentHashMap<>();
 
     public static int getWinsNeededToQualify(UUID playerUuid) {
@@ -86,8 +86,9 @@ public final class RankedMatchQualificationListener implements Listener {
 
     @Command(names = {"rmqRead"}, permission = "op")
     public static void rmqRead(Player sender, @Param(name="target",defaultValue="self") Player target) {
-        sender.sendMessage(ChatColor.DARK_PURPLE + "Wins: " + ChatColor.GRAY.toString() + rankedMatchQualificationWins.getOrDefault(target.getUniqueId(), 0));
-        sender.sendMessage(ChatColor.DARK_PURPLE + "Qualified: " + ChatColor.GRAY.toString() + isQualified(target.getUniqueId()));
+        sender.sendMessage(ChatColor.GOLD + "Wins: " + ChatColor.WHITE.toString() + rankedMatchQualificationWins.getOrDefault(target.getUniqueId(), 0));
+        sender.sendMessage(ChatColor.GOLD + "Qualified: " + ChatColor.WHITE.toString() + isQualified(target.getUniqueId()));
+
     }
 
     @Command(names = {"rmqSet"}, permission = "op")

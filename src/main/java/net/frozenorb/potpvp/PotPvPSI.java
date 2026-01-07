@@ -113,17 +113,16 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private EloHandler eloHandler;
     @Getter private TournamentHandler tournamentHandler;
     @Getter private PvPClassHandler pvpClassHandler;
-    
+
+
     @Getter private ChatColor dominantColor = ChatColor.RED;
 
     @Override
     public void onEnable() {
         //SpigotConfig.onlyCustomTab = true; // because we'll definitely forget
-        this.dominantColor = ChatColor.DARK_PURPLE;
+        this.dominantColor = ChatColor.GOLD;
         instance = this;
         saveDefaultConfig();
-
-//        Settings.setClean(true);
 
         setupMongo();
 

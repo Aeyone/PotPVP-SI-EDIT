@@ -251,7 +251,6 @@ public final class Match {
                 }
             }
             
-            messageAll(ChatColor.RED + "Match ended.");
             Bukkit.getPluginManager().callEvent(new MatchEndEvent(this));
         } catch (Exception ex) {
             ex.printStackTrace();

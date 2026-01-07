@@ -161,9 +161,9 @@ public final class DuelCommand {
         TextComponent commandPart = new TextComponent("/accept " + sender);
         TextComponent secondPart = new TextComponent(" to accept the invite");
 
-        firstPart.setColor(net.md_5.bungee.api.ChatColor.DARK_PURPLE);
+        firstPart.setColor(net.md_5.bungee.api.ChatColor.GOLD);
         commandPart.setColor(net.md_5.bungee.api.ChatColor.AQUA);
-        secondPart.setColor(net.md_5.bungee.api.ChatColor.DARK_PURPLE);
+        secondPart.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 
         ClickEvent.Action runCommand = ClickEvent.Action.RUN_COMMAND;
         HoverEvent.Action showText = HoverEvent.Action.SHOW_TEXT;

@@ -22,7 +22,7 @@ final class PostMatchStatisticsButton extends Button {
 
     @Override
     public String getName(Player player) {
-        return ChatColor.GREEN + "Statistics";
+        return ChatColor.GREEN + "Match Stats";
     }
 
     @Override

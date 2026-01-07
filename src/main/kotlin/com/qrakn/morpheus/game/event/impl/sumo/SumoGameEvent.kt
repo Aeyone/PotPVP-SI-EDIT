@@ -25,8 +25,8 @@ object SumoGameEvent : GameEvent {
     init {
         val meta = tutorialBook.itemMeta as BookMeta
 
-        meta.displayName = ChatColor.DARK_PURPLE.toString() + "How To Play Sumo"
-        meta.author = "VeltPvP"
+        meta.displayName = ChatColor.GOLD.toString() + "How To Play Sumo"
+        meta.author = "MineHQ"
         meta.title = "How To Play Sumo"
         meta.pages = listOf(
                 ChatColor.BOLD.toString() + "SUMO TUTORIAL\n" + ChatColor.RESET +

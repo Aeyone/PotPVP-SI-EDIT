@@ -17,7 +17,6 @@ public final class KitItems {
     public static final ItemStack OPEN_EDITOR_ITEM = new ItemStack(Material.BOOK);
 
     static {
-        ItemUtils.setDisplayName(OPEN_EDITOR_ITEM, AQUA + "Edit Kits");
+        ItemUtils.setDisplayName(OPEN_EDITOR_ITEM, LEFT_ARROW + YELLOW.toString() + BOLD + "Kit Editor" + RIGHT_ARROW);
     }
-
 }

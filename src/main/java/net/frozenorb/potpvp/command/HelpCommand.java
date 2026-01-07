@@ -19,26 +19,26 @@ import java.util.List;
 public final class HelpCommand {
 
     private static final List<String> HELP_MESSAGE_HEADER = ImmutableList.of(
-        ChatColor.DARK_PURPLE + PotPvPLang.LONG_LINE,
-        "§5§lPractice Help",
-        ChatColor.DARK_PURPLE + PotPvPLang.LONG_LINE,
-        "§7§lRemember: §eMost things are clickable!",
+        ChatColor.GOLD + PotPvPLang.LONG_LINE,
+        "§9§lPractice Help",
+        ChatColor.GOLD + PotPvPLang.LONG_LINE,
+        "§6§lRemember: §eMost things are clickable!",
         ""
     );
 
     private static final List<String> HELP_MESSAGE_LOBBY = ImmutableList.of(
-        "§5Common Commands:",
+        "§9Common Commands:",
         "§e/duel <player> §7- Challenge a player to a duel",
         "§e/party invite <player> §7- Invite a player to a party",
         "",
-        "§5Other Commands:",
+        "§9Other Commands:",
         "§e/party help §7- Information on party commands",
         "§e/report <player> <reason> §7- Report a player for violating the rules",
         "§e/request <message> §7- Request assistance from a staff member"
     );
 
     private static final List<String> HELP_MESSAGE_MATCH = ImmutableList.of(
-        "§5Common Commands:",
+        "§9Common Commands:",
         "§e/spectate <player> §7- Spectate a player in a match",
         "§e/report <player> <reason> §7- Report a player for violating the rules",
         "§e/request <message> §7- Request assistance from a staff member"
@@ -46,12 +46,12 @@ public final class HelpCommand {
 
     private static final List<String> HELP_MESSAGE_FOOTER = ImmutableList.of(
         "",
-        "§5Server Information:",
-        PotPvPSI.getInstance().getDominantColor() == ChatColor.LIGHT_PURPLE ? "§eOfficial Teamspeak §7- §dts.veltpvp.com" : "§eOfficial Teamspeak §7- §dts.veltpvp.com",
-        PotPvPSI.getInstance().getDominantColor() == ChatColor.LIGHT_PURPLE ? "§eOfficial Rules §7- §dwww.veltpvp.com/rules" : "§eOfficial Rules §7- §dwww.veltpvp.com/rules",
-        PotPvPSI.getInstance().getDominantColor() == ChatColor.LIGHT_PURPLE ? "§eStore §7- §dwww.veltpvp.com/store" : "§eStore §7- §dwww.veltpvp.com/store",
-     // "§ePractice Leaderboards §7- §dwww.minehq.com/stats/potpvp",
-        ChatColor.DARK_PURPLE + PotPvPLang.LONG_LINE
+        "§9Server Information:",
+        "§eOfficial Teamspeak §7- §dts.minehq.com",
+        "§eOfficial Rules §7- §dwww.minehq.com/rules",
+        "§eStore §7- §dwww.minehq.com/store",
+     // "§ePotPvP Leaderboards §7- §dwww.minehq.com/stats/potpvp",
+        ChatColor.GOLD + PotPvPLang.LONG_LINE
     );
 
     @Command(names = {"help", "?", "halp", "helpme"}, permission = "")

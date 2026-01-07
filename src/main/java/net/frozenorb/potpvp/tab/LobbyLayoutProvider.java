@@ -35,7 +35,7 @@ final class LobbyLayoutProvider implements BiConsumer<Player, TabLayout> {
                     continue;
                 }
 
-                tabLayout.set(x++, y, ChatColor.GRAY + kitType.getDisplayName() + " - " + eloHandler.getElo(player, kitType));
+                tabLayout.set(x++, y, PotPvPSI.getInstance().getDominantColor() + kitType.getDisplayName() + " - " + eloHandler.getElo(player, kitType));
 
                 if (x == 3) {
                     x = 0;

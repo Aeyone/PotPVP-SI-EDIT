@@ -11,6 +11,7 @@ import net.frozenorb.qlib.menu.Menu;
 import net.frozenorb.qlib.util.Callback;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -49,12 +50,16 @@ public final class SelectKitTypeMenu extends Menu {
                 continue;
             }
 
-            buttons.put(index++, new KitTypeButton(kitType, callback));
+            buttons.put(index ++, new KitTypeButton(kitType, callback));
         }
 
         Party party = PotPvPSI.getInstance().getPartyHandler().getParty(player);
         if (party != null) {
-            buttons.put(8, new KitTypeButton(KitType.teamFight, callback));
+            int line = (index + 8) / 9;
+            for (int i = line * 9; i < line * 9 + 9; i ++) {
+                buttons.put(i, Button.placeholder(Material.STAINED_GLASS_PANE, (byte)15));
+            }
+            buttons.put((line + 1) * 9, new KitTypeButton(KitType.teamFight, callback));
         }
 
         return buttons;

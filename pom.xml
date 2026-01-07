@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.frozenorb</groupId>
-    <artifactId>PotPvP</artifactId>
-    <name>PotPvP</name>
-    <version>1.0</version>
+    <artifactId>MineHQ-Practice</artifactId>
+    <name>MineHQ-Practice</name>
+    <version>1.0.1</version>
 
     <properties>
         <minehq.mavenLevel>minehq-high</minehq.mavenLevel>

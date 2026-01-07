@@ -32,7 +32,7 @@ public abstract class PvPClass implements Listener {
 
     public PvPClass(String name, int warmup, String armorContains, List<Material> consumables) {
         this.name = name;
-        this.siteLink = "www.veltpvp.com/" + name.toLowerCase().replaceAll(" ", "-");
+        this.siteLink = "www.minehq.com/" + name.toLowerCase().replaceAll(" ", "-");
         this.warmup = warmup;
         this.armorContains = armorContains;
         this.consumables = consumables;

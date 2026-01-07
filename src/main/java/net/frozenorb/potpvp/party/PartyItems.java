@@ -24,11 +24,11 @@ public final class PartyItems {
     public static final ItemStack OTHER_PARTIES_ITEM = new ItemStack(Material.SKULL_ITEM);
 
     static {
-        ItemUtils.setDisplayName(LEAVE_PARTY_ITEM, RED + "Leave Party");
-        ItemUtils.setDisplayName(ASSIGN_CLASSES, GOLD + "HCF Kits");
-        ItemUtils.setDisplayName(START_TEAM_SPLIT_ITEM, YELLOW + "Start Team Split");
-        ItemUtils.setDisplayName(START_FFA_ITEM, YELLOW + "Start Party FFA");
-        ItemUtils.setDisplayName(OTHER_PARTIES_ITEM, GREEN + "Other Parties");
+        ItemUtils.setDisplayName(LEAVE_PARTY_ITEM, LEFT_ARROW + RED + BOLD + "Leave Party" + RIGHT_ARROW);
+        ItemUtils.setDisplayName(ASSIGN_CLASSES, LEFT_ARROW + GOLD + BOLD + "HCF Kits" + RIGHT_ARROW);
+        ItemUtils.setDisplayName(START_TEAM_SPLIT_ITEM, LEFT_ARROW + YELLOW + BOLD + "Start Team Split" + RIGHT_ARROW);
+        ItemUtils.setDisplayName(START_FFA_ITEM, LEFT_ARROW + YELLOW + BOLD + "Start Party FFA" + RIGHT_ARROW);
+        ItemUtils.setDisplayName(OTHER_PARTIES_ITEM, LEFT_ARROW + GREEN + BOLD + "Other Parties" + RIGHT_ARROW);
     }
 
     public static ItemStack icon(Party party) {
