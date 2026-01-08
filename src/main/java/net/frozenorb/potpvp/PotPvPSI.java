@@ -72,6 +72,8 @@ import net.frozenorb.potpvp.setting.SettingHandler;
 import net.frozenorb.potpvp.statistics.StatisticsHandler;
 import net.frozenorb.potpvp.tab.PotPvPLayoutProvider;
 import net.frozenorb.potpvp.tournament.TournamentHandler;
+import net.frozenorb.potpvp.fakechat.FakeChatManager;
+import net.frozenorb.potpvp.fakechat.FakeChatGUI;
 import net.frozenorb.qlib.command.FrozenCommandHandler;
 import net.frozenorb.qlib.nametag.FrozenNametagHandler;
 import net.frozenorb.qlib.scoreboard.FrozenScoreboardHandler;
@@ -114,6 +116,7 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private TournamentHandler tournamentHandler;
     @Getter private PvPClassHandler pvpClassHandler;
 
+    @Getter private FakeChatManager fakeChatManager;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
 
@@ -166,6 +169,7 @@ public final class PotPvPSI extends JavaPlugin {
         eloHandler = new EloHandler();
         pvpClassHandler = new PvPClassHandler();
         tournamentHandler = new TournamentHandler();
+        fakeChatManager = new FakeChatManager(this);
 
         new Morpheus(this); // qrakn game events
         new EventTask().runTaskTimerAsynchronously(this, 1L, 1L);
@@ -187,6 +191,7 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new StatisticsHandler(), this);
         getServer().getPluginManager().registerEvents(new GameListeners(), this);
         getServer().getPluginManager().registerEvents(new EventListeners(), this);
+        getServer().getPluginManager().registerEvents(new FakeChatGUI(), this);
 
         FrozenCommandHandler.registerAll(this);
         FrozenCommandHandler.registerParameterType(KitType.class, new KitTypeParameterType());

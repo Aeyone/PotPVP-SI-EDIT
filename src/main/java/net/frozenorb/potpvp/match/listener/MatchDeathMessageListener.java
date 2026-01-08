@@ -10,6 +10,8 @@ import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.nametag.PotPvPNametagProvider;
 import net.frozenorb.potpvp.setting.Setting;
 import net.frozenorb.potpvp.setting.SettingHandler;
+import net.frozenorb.potpvp.fakechat.FakeChatManager;
+
 import net.frozenorb.qlib.qLib;
 
 import org.bukkit.Bukkit;
@@ -68,6 +70,10 @@ public final class MatchDeathMessageListener implements Listener {
                 String killerFormattedName = killerNameColor + killer.getName();
 
                 onlinePlayer.sendMessage(String.format(KILLED_BY_OTHER_MESSAGE, killerFormattedName, killedFormattedName));
+            }
+
+            if (PotPvPSI.getInstance().getFakeChatManager().hasActiveSession(onlinePlayer)) {//fakechat
+               PotPvPSI.getInstance().getFakeChatManager().getSession(onlinePlayer).triggerLOLSpam(20);
             }
 
             if (settingHandler.getSetting(onlinePlayer, Setting.VIEW_OTHERS_LIGHTNING)) {
