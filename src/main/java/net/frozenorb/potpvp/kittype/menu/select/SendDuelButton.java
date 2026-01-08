@@ -2,6 +2,7 @@ package net.frozenorb.potpvp.kittype.menu.select;
 
 import java.util.List;
 import java.util.Set;
+import java.beans.ConstructorProperties;
 
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -28,12 +29,7 @@ public class SendDuelButton extends Button {
 
     @Override
     public Material getMaterial(Player arg0) {
-        return Material.WOOL;
-    }
-
-    @Override
-    public byte getDamageValue(Player arg0) {
-        return DyeColor.LIME.getWoolData();
+        return Material.DIAMOND_SWORD;
     }
     
     @Override
@@ -43,12 +39,17 @@ public class SendDuelButton extends Button {
     
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
-        if (maps.size() < 2) {
-            player.sendMessage(ChatColor.RED + "You must select at least two maps.");
+        if (maps.size() < 1) {
+            player.sendMessage(ChatColor.RED + "You must select at least one map.");
             return;
         }
         
         mapsCallback.callback(maps);
     }
-    
+
+//    @ConstructorProperties({"maps", "mapsCallback"})
+//    public SendDuelButton(Set<String> maps, Callback<Set<String>> mapsCallback) {
+//        this.maps = maps;
+//        this.mapsCallback = mapsCallback;
+//    }
 }

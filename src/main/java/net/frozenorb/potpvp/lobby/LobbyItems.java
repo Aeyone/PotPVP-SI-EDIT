@@ -55,7 +55,7 @@ public final class LobbyItems {
         ItemUtils.setDisplayName(
             MANAGE_ITEM, 
             LEFT_ARROW + 
-            GRAY.toString() + BOLD + "Manage PotPvP" + 
+            GRAY.toString() + BOLD + "Manage Practice" +
             RIGHT_ARROW
         );
 

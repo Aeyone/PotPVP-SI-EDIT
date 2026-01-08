@@ -15,138 +15,141 @@ import lombok.Getter;
 public enum Setting {
 
     SHOW_SCOREBOARD(
-        ChatColor.LIGHT_PURPLE + "Match Scoreboard",
-        ImmutableList.of(
-            ChatColor.BLUE + "Toggles side scoreboard in-match"
-        ),
-        Material.ITEM_FRAME,
-        ChatColor.YELLOW + "Show match scoreboard",
-        ChatColor.YELLOW + "Hide match scoreboard",
-        true,
-        null // no permission required
+            ChatColor.LIGHT_PURPLE + "Match Scoreboard",
+            ImmutableList.of(
+                    ChatColor.BLUE + "Toggles side scoreboard in-match"
+            ),
+            Material.ITEM_FRAME,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     ),
     SHOW_SPECTATOR_JOIN_MESSAGES(
-        ChatColor.AQUA + "Spectator Join Messages",
-        ImmutableList.of(
-            ChatColor.BLUE + "Enable this to display messages as spectators join."
-        ),
-        Material.BONE,
-        ChatColor.YELLOW + "Show spectator join messages",
-        ChatColor.YELLOW + "Hide spectator join messages",
-        true,
-        null // no permission required
+            ChatColor.AQUA + "Spectator Join Messages",
+            ImmutableList.of(
+                    ChatColor.BLUE + "Enable this to display messages as spectators join."
+            ),
+            Material.BONE,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     ),
     VIEW_OTHER_SPECTATORS(
-        ChatColor.GREEN + "Other Spectators",
-        ImmutableList.of(
-            ChatColor.BLUE + "If enabled, you can see spectators",
-            ChatColor.BLUE + "in the same match as you.",
-            "",
-            ChatColor.BLUE + "Disable to only see alive players in match."
-        ),
-        Material.GLASS_BOTTLE,
-        ChatColor.YELLOW + "Show other spectators",
-        ChatColor.YELLOW + "Hide other spectators",
-        true,
-        null // no permission required
+            ChatColor.GREEN + "Other Spectators",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you can see spectators",
+                    ChatColor.BLUE + "in the same match as you.", "",
+                    ChatColor.BLUE + "Disable to only see alive players in match."
+            ),
+            Material.GLASS_BOTTLE,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     ),
     ALLOW_SPECTATORS(
             ChatColor.DARK_GREEN + "Allow Spectators",
             ImmutableList.of(
                     ChatColor.BLUE + "If enabled, players can spectate your",
-                    ChatColor.BLUE + "matches with /spectate.",
-                    "",
+                    ChatColor.BLUE + "matches with /spectate.", "",
                     ChatColor.BLUE + "Disable to disallow match spectators."
             ),
             Material.REDSTONE_TORCH_ON,
-            ChatColor.YELLOW + "Let players spectate your matches",
-            ChatColor.YELLOW + "Don't let players spectate your matches",
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
             true,
-            null // no permission required
+            (String) null
     ),
-    RECEIVE_DUELS(
-        ChatColor.GREEN + "Duel Invites",
-        ImmutableList.of(
-            ChatColor.BLUE + "If enabled, you will be able to receive",
-            ChatColor.BLUE + "duels from other players or parties.",
-           "",
-            ChatColor.BLUE + "Disable to not receive, but still send duels."
-        ),
-        Material.FIRE,
-        ChatColor.YELLOW + "Allow duel invites",
-        ChatColor.YELLOW + "Disallow duel invites",
-        true,
-        "potpvp.toggleduels"
+    RECEIVE_DUELS(ChatColor.GREEN + "Duel Invites",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you will be able to receive",
+                    ChatColor.BLUE + "duels from other players or parties.", "",
+                    ChatColor.BLUE + "Disable to not receive, but still send duels."
+            ),
+            Material.FIRE,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            "potpvp.toggleduels"
     ),
     VIEW_OTHERS_LIGHTNING(
-        ChatColor.GREEN + "Death Lightning",
-        ImmutableList.of(
-            ChatColor.BLUE + "If enabled, lightning will be visible",
-            ChatColor.BLUE + "when other players die.",
-            "",
-            ChatColor.BLUE + "Disable to hide others lightning."
-        ),
-        Material.TORCH,
-        ChatColor.YELLOW + "Show other lightning",
-        ChatColor.YELLOW + "Hide other lightning",
-        true,
-        null // no permission required
+            ChatColor.GREEN + "Death Lightning",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, lightning will be visible",
+                    ChatColor.BLUE + "when other players die.", "",
+                    ChatColor.BLUE + "Disable to hide others lightning."
+            ),
+            Material.TORCH,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     ),
     NIGHT_MODE(
-        ChatColor.GRAY + "Night Mode",
-        ImmutableList.of(
-            ChatColor.BLUE + "If enabled, your player time will be",
-            ChatColor.BLUE + "changed to night time.",
-            "",
-            ChatColor.BLUE + "Disable to play in day time."
-        ),
-        Material.GLOWSTONE,
-        ChatColor.YELLOW + "Time is set to night",
-        ChatColor.YELLOW + "Time is set to day",
-        false,
-        null // no permission required
+            ChatColor.GRAY + "Night Mode",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, your player time will be",
+                    ChatColor.BLUE + "changed to night time.", "",
+                    ChatColor.BLUE + "Disable to play in day time."
+            ),
+            Material.GLOWSTONE,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            false,
+            (String) null
     ),
     ENABLE_GLOBAL_CHAT(
-        ChatColor.RED + "Global Chat",
-        ImmutableList.of(
-            ChatColor.BLUE + "If enabled, you will see messages",
-            ChatColor.BLUE + "sent in the global chat channel.",
-            "",
-            ChatColor.BLUE + "Disable to only see OP messages."
-        ),
-        Material.BOOK_AND_QUILL,
-        ChatColor.YELLOW + "Global chat is shown",
-        ChatColor.YELLOW + "Global chat is hidden",
-        true,
-        null // no permission required
+            ChatColor.RED + "Global Chat",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you will see messages",
+                    ChatColor.BLUE + "sent in the global chat channel.", "",
+                    ChatColor.BLUE + "Disable to only see OP messages."
+            ),
+            Material.BOOK_AND_QUILL,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     ),
     SEE_TOURNAMENT_JOIN_MESSAGE(
             ChatColor.DARK_PURPLE + "Tournament Join Messages",
             ImmutableList.of(
-                ChatColor.BLUE + "If enabled, you will see messages",
-                ChatColor.BLUE + "when people join the tournament",
-                "",
-                ChatColor.BLUE + "Disable to only see your own party join messages."
+                    ChatColor.BLUE + "If enabled, you will see messages",
+                    ChatColor.BLUE + "when people join the tournament", "",
+                    ChatColor.BLUE + "Disable to only see your own party join messages."
             ),
             Material.IRON_DOOR,
-            ChatColor.YELLOW + "Tournament join messages are shown",
-            ChatColor.YELLOW + "Tournament join messages are hidden",
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
             true,
-            null // no permission required
+            (String) null
     ),
     SEE_TOURNAMENT_ELIMINATION_MESSAGES(
             ChatColor.DARK_PURPLE + "Tournament Elimination Messages",
             ImmutableList.of(
-                ChatColor.BLUE + "If enabled, you will see messages when",
-                ChatColor.BLUE + "people are eliminated the tournament",
-                "",
-                ChatColor.BLUE + "Disable to only see your own party elimination messages."
+                    ChatColor.BLUE + "If enabled, you will see messages when",
+                    ChatColor.BLUE + "people are eliminated the tournament", "",
+                    ChatColor.BLUE + "Disable to only see your own party elimination messages."
             ),
             Material.SKULL_ITEM,
-            ChatColor.YELLOW + "Tournament elimination messages are shown",
-            ChatColor.YELLOW + "Tournament elimination messages are hidden",
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
             true,
-            null // no permission required
+            (String) null
+    ),
+    SELECT_MAP(
+            ChatColor.GOLD + "Select Arena",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you will be able to select",
+                    ChatColor.BLUE + "arenas when dueling players."
+            ),
+            Material.EMPTY_MAP,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     );
 
     /**

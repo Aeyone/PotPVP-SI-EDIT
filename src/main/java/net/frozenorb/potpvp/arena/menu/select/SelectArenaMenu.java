@@ -2,6 +2,7 @@ package net.frozenorb.potpvp.arena.menu.select;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -38,8 +39,12 @@ public class SelectArenaMenu extends Menu {
                 enabledSchematics.add(schematic.getName());
             }
         }
-        
-        this.allMaps = ImmutableSet.copyOf(enabledSchematics);
+
+//        this.allMaps = ImmutableSet.copyOf(enabledSchematics);
+        this.allMaps = new TreeSet<>(this.enabledSchematics);
+
+        //Set all closed
+        enabledSchematics.clear();
     }
 
     @Override

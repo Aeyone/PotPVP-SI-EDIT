@@ -2,8 +2,10 @@ package net.frozenorb.potpvp.kittype.menu.select;
 
 import java.util.List;
 import java.util.Set;
+import java.beans.ConstructorProperties;
 
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -26,7 +28,12 @@ public class ToggleAllButton extends Button {
 
     @Override
     public Material getMaterial(Player arg0) {
-        return maps.isEmpty() ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF;
+        return Material.WOOL;
+    }
+
+    @Override
+    public byte getDamageValue(Player arg0) {
+        return this.maps.isEmpty() ? DyeColor.LIME.getWoolData() : DyeColor.RED.getWoolData();
     }
 
     @Override
@@ -42,4 +49,10 @@ public class ToggleAllButton extends Button {
             maps.clear();
         }
     }
+
+//    @ConstructorProperties({"allMaps", "maps"})
+//    public ToggleAllButton(Set<String> allMaps, Set<String> maps) {
+//        this.allMaps = allMaps;
+//        this.maps = maps;
+//    }
 }

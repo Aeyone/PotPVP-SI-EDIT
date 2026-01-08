@@ -2,19 +2,32 @@ package net.frozenorb.potpvp.duel.command;
 
 import net.frozenorb.potpvp.PotPvPLang;
 import net.frozenorb.potpvp.PotPvPSI;
+
+import net.frozenorb.potpvp.arena.ArenaSchematic;
+import net.frozenorb.potpvp.arena.menu.select.SelectArenaMenu;
 import net.frozenorb.potpvp.duel.DuelHandler;
 import net.frozenorb.potpvp.duel.DuelInvite;
 import net.frozenorb.potpvp.duel.PartyDuelInvite;
 import net.frozenorb.potpvp.duel.PlayerDuelInvite;
+
 import net.frozenorb.potpvp.kittype.KitType;
 import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
+
 import net.frozenorb.potpvp.lobby.LobbyHandler;
+
 import net.frozenorb.potpvp.party.Party;
 import net.frozenorb.potpvp.party.PartyHandler;
+
 import net.frozenorb.potpvp.validation.PotPvPValidation;
+
+import net.frozenorb.potpvp.setting.Setting;
+import net.frozenorb.potpvp.setting.SettingHandler;
+
 import net.frozenorb.qlib.command.Command;
 import net.frozenorb.qlib.command.Param;
+import net.frozenorb.qlib.qLib;
 import net.frozenorb.qlib.util.UUIDUtils;
+
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -23,6 +36,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
 
 public final class DuelCommand {
 
@@ -72,10 +87,32 @@ public final class DuelCommand {
                 return;
             }
 
-            new SelectKitTypeMenu(kitType -> {
-                sender.closeInventory();
-                duel(sender, target, kitType);
-            }, "Select a kit type...").openMenu(sender);
+            SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
+            new SelectKitTypeMenu(
+               kitType -> {
+                  sender.closeInventory();
+                  if(settingHandler.getSetting(sender, Setting.SELECT_MAP)){
+                     new SelectArenaMenu(kitType, setOfArena -> { // setOfArena: The selected arena
+                        sender.closeInventory();
+
+                        // randomly selected arena
+                        String arenaName = new ArrayList<>(setOfArena).get(qLib.RANDOM.nextInt(setOfArena.size()));
+                        ArenaSchematic arena = null;
+
+                        for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
+                           if(schematic.getName().equals(arenaName)){
+                              arena = schematic;
+                           }
+                        }
+                        duel(sender, target, kitType, arena);
+                     }, "Select an arena...").openMenu(sender);
+                  }else{
+                     duel(sender, target, kitType);
+                  }
+               },
+               "Select a kit type..."
+            ).openMenu(sender);
+
         } else if (senderParty == null) {
             // player dueling party (illegal)
             sender.sendMessage(ChatColor.RED + "You must create a party to duel " + target.getName() + "'s party.");
@@ -86,6 +123,10 @@ public final class DuelCommand {
     }
 
     public static void duel(Player sender, Player target, KitType kitType) {
+        duel(sender, target, kitType, null);
+    }
+
+    public static void duel(Player sender, Player target, KitType kitType, ArenaSchematic arena) {
         if (!PotPvPValidation.canSendDuel(sender, target)) {
             return;
         }
@@ -104,7 +145,13 @@ public final class DuelCommand {
 
         if (alreadySentInvite != null) {
             if (alreadySentInvite.getKitType() == kitType) {
-                sender.sendMessage(ChatColor.YELLOW + "You have already invited " + ChatColor.AQUA + target.getName() + ChatColor.YELLOW + " to a " + kitType.getColoredDisplayName() + ChatColor.YELLOW + " duel.");
+                sender.sendMessage(
+                    ChatColor.YELLOW + "You have already invited " +
+                    ChatColor.AQUA + target.getName() +
+                    ChatColor.YELLOW + " to a " +
+                    kitType.getColoredDisplayName() +
+                    ChatColor.YELLOW + " duel."
+                );
                 return;
             } else {
                 // if an invite was already sent (with a different kit type)
@@ -113,11 +160,30 @@ public final class DuelCommand {
             }
         }
 
-        target.sendMessage(ChatColor.AQUA + sender.getName() + ChatColor.YELLOW + " has sent you a " + kitType.getColoredDisplayName() + ChatColor.YELLOW + " duel.");
+        target.sendMessage(
+            ChatColor.AQUA + sender.getName() +
+            ChatColor.YELLOW + " has sent you a " +
+            kitType.getColoredDisplayName() +
+            ChatColor.YELLOW + " duel" +
+            (arena != null ?
+                    ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + "." :
+                    ChatColor.YELLOW + "."
+            )
+        );
         target.spigot().sendMessage(createInviteNotification(sender.getName()));
 
-        sender.sendMessage(ChatColor.YELLOW + "Successfully sent a " + kitType.getColoredDisplayName() + ChatColor.YELLOW + " duel invite to " + ChatColor.AQUA + target.getName() + ChatColor.YELLOW + ".");
-        duelHandler.insertInvite(new PlayerDuelInvite(sender, target, kitType));
+        sender.sendMessage(
+            ChatColor.YELLOW + "Successfully sent a " +
+            kitType.getColoredDisplayName() +
+            ChatColor.YELLOW + " duel invite to " +
+            ChatColor.AQUA + target.getName() +
+            (arena != null ?
+                    ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + "." :
+                    ChatColor.YELLOW + "."
+            )
+        );
+        duelHandler.insertInvite(new PlayerDuelInvite(sender, target, kitType, arena));
+
     }
 
     public static void duel(Player sender, Party senderParty, Party targetParty, KitType kitType) {

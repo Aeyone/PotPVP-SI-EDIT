@@ -13,8 +13,8 @@ import java.util.List;
 
 import static net.frozenorb.potpvp.PotPvPLang.LEFT_ARROW;
 import static net.frozenorb.potpvp.PotPvPLang.RIGHT_ARROW;
-import static net.md_5.bungee.api.ChatColor.BOLD;
-import static net.md_5.bungee.api.ChatColor.LIGHT_PURPLE;
+import static org.bukkit.ChatColor.BOLD;
+import static org.bukkit.ChatColor.GOLD;
 
 @UtilityClass
 public final class EventItems {
@@ -23,7 +23,7 @@ public final class EventItems {
         List<Game> game = GameQueue.INSTANCE.getCurrentGames();
 
         if (game.size() > 0) {
-            return ItemBuilder.of(Material.EMERALD).name(LIGHT_PURPLE + "Join An Event").build();
+            return ItemBuilder.of(Material.EMERALD).name(LEFT_ARROW + GOLD + BOLD + "Join An Event" + RIGHT_ARROW).build();
         }
 
         return null;

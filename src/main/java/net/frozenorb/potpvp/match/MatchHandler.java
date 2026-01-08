@@ -83,8 +83,11 @@ public final class MatchHandler {
         Bukkit.getPluginManager().registerEvents(new SpectatorItemListener(this), PotPvPSI.getInstance());
         Bukkit.getPluginManager().registerEvents(new SpectatorPreventionListener(), PotPvPSI.getInstance());
     }
-
     public Match startMatch(List<MatchTeam> teams, KitType kitType, boolean ranked, boolean allowRematches) {
+        return startMatch(teams, kitType, null, ranked, allowRematches);
+    }
+
+    public Match startMatch(List<MatchTeam> teams, KitType kitType, ArenaSchematic arena, boolean ranked, boolean allowRematches) {
         boolean anyOps = false;
 
         for (MatchTeam team : teams) {
@@ -109,40 +112,49 @@ public final class MatchHandler {
             }
         }
 
+        Optional<Arena> openArenaOpt;
         ArenaHandler arenaHandler = PotPvPSI.getInstance().getArenaHandler();
-        long matchSize = teams.stream()
-                .mapToInt(t -> t.getAllMembers().size())
-                .sum();
 
-        // the archer only logic here was often a source of confusion while
-        // this code was being written. below is a table of the desired
-        // results / if a match can run in a given arena
-        //
-        //              Arena is archer only    Arena is not archer only
-        //  Is Archer           Yes                         Yes
-        // Not Archer           No                          Yes
-        //
-        // the left side of the or statement covers the top row, and the
-        // right side covers the right side
-        Optional<Arena> openArenaOpt = arenaHandler.allocateUnusedArena(schematic ->
-                schematic.isEnabled() &&
-                        schematic.getEvent() == null &&
-                        !schematic.isTeamFightsOnly() &&
-                        canUseSchematic(kitType, schematic) &&
-                        matchSize <= schematic.getMaxPlayerCount() &&
-                        matchSize >= schematic.getMinPlayerCount() &&
-                        (!ranked || schematic.isSupportsRanked()) &&
-                        (kitType.getId().equals("ARCHER") || !schematic.isArcherOnly())
-        );
+        if (arena == null) {
+            long matchSize = teams.stream()
+                    .mapToInt(t -> t.getAllMembers().size())
+                    .sum();
 
-        if (kitType.equals(KitType.teamFight)) {
+            // the archer only logic here was often a source of confusion while
+            // this code was being written. below is a table of the desired
+            // results / if a match can run in a given arena
+            //
+            //              Arena is archer only    Arena is not archer only
+            //  Is Archer           Yes                         Yes
+            // Not Archer           No                          Yes
+            //
+            // the left side of the or statement covers the top row, and the
+            // right side covers the right side
+
             openArenaOpt = arenaHandler.allocateUnusedArena(schematic ->
                     schematic.isEnabled() &&
                             schematic.getEvent() == null &&
+                            !schematic.isTeamFightsOnly() &&
                             canUseSchematic(kitType, schematic) &&
                             matchSize <= schematic.getMaxPlayerCount() &&
                             matchSize >= schematic.getMinPlayerCount() &&
-                            schematic.isTeamFightsOnly()
+                            (!ranked || schematic.isSupportsRanked()) &&
+                            (kitType.getId().equals("ARCHER") || !schematic.isArcherOnly())
+            );
+
+            if (kitType.equals(KitType.teamFight)) {
+                openArenaOpt = arenaHandler.allocateUnusedArena(schematic ->
+                        schematic.isEnabled() &&
+                                schematic.getEvent() == null &&
+                                canUseSchematic(kitType, schematic) &&
+                                matchSize <= schematic.getMaxPlayerCount() &&
+                                matchSize >= schematic.getMinPlayerCount() &&
+                                schematic.isTeamFightsOnly()
+                );
+            }
+        } else {
+            openArenaOpt = arenaHandler.allocateUnusedArena(schematic ->
+                    schematic.isEnabled() && schematic == arena
             );
         }
 

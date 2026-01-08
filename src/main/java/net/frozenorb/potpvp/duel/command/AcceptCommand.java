@@ -102,12 +102,29 @@ public final class AcceptCommand {
             return;
         }
 
-        Match match = matchHandler.startMatch(
-                ImmutableList.of(new MatchTeam(sender.getUniqueId()), new MatchTeam(target.getUniqueId())),
+        Match match;
+        if (invite.getArena() == null) {
+            match = matchHandler.startMatch(
+                ImmutableList.of(
+                    new MatchTeam(sender.getUniqueId()),
+                    new MatchTeam(target.getUniqueId())
+                ),
                 invite.getKitType(),
                 false,
-                true // see Match#allowRematches
-        );
+                true
+            );
+        } else {
+            match = matchHandler.startMatch(
+                ImmutableList.of(
+                    new MatchTeam(sender.getUniqueId()),
+                    new MatchTeam(target.getUniqueId())
+                ),
+                invite.getKitType(),
+                invite.getArena(),
+                false,
+                true
+            );
+        }
 
         if (match != null) {
             // only remove invite if successful
