@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.spigotmc.SpigotConfig;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +67,9 @@ public final class LobbyHandler {
         player.setGameMode(GameMode.SURVIVAL);
 
         returnedToLobby.put(player.getUniqueId(), System.currentTimeMillis());
+
+        player.setKbProfile(null);
+        player.setPotProfile(null);
     }
 
     public long getLastLobbyTime(Player player) {

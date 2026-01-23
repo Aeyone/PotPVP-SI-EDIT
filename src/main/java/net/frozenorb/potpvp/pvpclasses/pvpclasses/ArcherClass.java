@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.com.google.gson.internal.Pair;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -31,6 +30,16 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("deprecation")
 public class ArcherClass extends PvPClass {
+
+    public final class Pair<A, B> {
+        private final A first;
+        private final B second;
+
+        public Pair(A first, B second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
 
     public static final int MARK_SECONDS = 10;
 

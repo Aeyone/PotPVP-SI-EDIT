@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
+import org.spigotmc.SpigotConfig;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +59,8 @@ import net.frozenorb.potpvp.util.PatchedPlayerUtils;
 import net.frozenorb.potpvp.util.VisibilityUtils;
 import net.frozenorb.qlib.nametag.FrozenNametagHandler;
 import net.frozenorb.qlib.util.UUIDUtils;
+import net.hylist.profile.KnockbackProfile;
+import net.hylist.profile.PotionProfile;
 
 public final class Match {
     
@@ -149,8 +152,22 @@ public final class Match {
         this.allowRematches = allowRematches;
         
         saveState();
+        applyConfig();
     }
-    
+
+    private void applyConfig(){
+        KnockbackProfile kbProfile = SpigotConfig.knockbackManager.getProfileByName(this.kitType.getId());
+        PotionProfile potProfile = SpigotConfig.potionManager.getProfileByName(this.kitType.getId());
+
+        for (MatchTeam team : teams) {
+            for (UUID playerUuid : team.getAllMembers()) {
+                Player player = Bukkit.getPlayer(playerUuid);
+                player.setKbProfile(kbProfile);
+                player.setPotProfile(potProfile);
+            }
+        }
+    }
+
     private void saveState() {
         if (kitType.isBuildingAllowed())
             this.arena.takeSnapshot();
