@@ -50,6 +50,7 @@ final class ManageSchematicButton extends Button {
         description.add(ChatColor.GREEN + "Enabled: " + ChatColor.WHITE + (schematic.isEnabled() ? "Yes" : "No"));
         description.add(ChatColor.GREEN + "Copies: " + ChatColor.WHITE + totalCopies);
         description.add(ChatColor.GREEN + "Copies in use: " + ChatColor.WHITE + inUseCopies);
+        description.add(ChatColor.GREEN + "Style: " + ChatColor.WHITE + (schematic.getStyle() == null ? "Undefine" : schematic.getStyle()));
 
         return description;
     }

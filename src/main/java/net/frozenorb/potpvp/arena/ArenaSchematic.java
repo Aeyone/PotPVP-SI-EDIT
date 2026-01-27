@@ -80,6 +80,8 @@ public final class ArenaSchematic {
 
     @Getter @Setter private String eventName = null;
 
+    @Getter @Setter private String style = null;
+
     /**
      * Index on the X axis on the grid (and in calculations regarding model arenas)
      * @see ArenaGrid

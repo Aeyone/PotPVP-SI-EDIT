@@ -1,5 +1,6 @@
 package net.frozenorb.potpvp.arena.menu.manageschematic;
 
+import com.google.common.collect.ImmutableList;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.arena.ArenaSchematic;
 import net.frozenorb.potpvp.arena.menu.manageschematics.ManageSchematicsMenu;
@@ -72,6 +73,39 @@ public final class ManageSchematicMenu extends Menu {
         buttons.put(25, new BooleanTraitButton<>(schematic, "HCF Only", ArenaSchematic::setHCFOnly, ArenaSchematic::isHCFOnly, save));
         buttons.put(26, new BooleanTraitButton<>(schematic, "Team Fights Only", ArenaSchematic::setTeamFightsOnly, ArenaSchematic::isTeamFightsOnly, save));
         buttons.put(27, new Button() {
+            @Override
+            public String getName(Player player) {
+                return ChatColor.AQUA + "Style select";
+            }
+
+            @Override
+            public List<String> getDescription(Player player) {
+                return ImmutableList.of(
+                    ChatColor.YELLOW + "Current Style: " + ChatColor.WHITE + (schematic.getStyle() != null ? schematic.getStyle() : "Undefine"),
+                    "",
+                    ChatColor.GREEN.toString() + ChatColor.BOLD + "Click to toggle"
+                );
+            }
+
+            @Override
+            public Material getMaterial(Player player) {
+                return schematic.getStyle() == null ? Material.EMPTY_MAP : Material.MAP;
+            }
+
+            @Override
+            public void clicked(Player player, int slot, ClickType clickType) {
+                if (schematic.getStyle() == null) {
+                    schematic.setStyle("Kohi");
+                } else if (schematic.getStyle() == "Kohi") {
+                    schematic.setStyle("PotPvP");
+                } else if (schematic.getStyle() == "PotPvP") {
+                    schematic.setStyle("Practice");
+                } else {
+                    schematic.setStyle(null);
+                }
+            }
+        });
+        buttons.put(35, new Button() {
             @Override
             public String getName(Player player) {
                 return ChatColor.GREEN + "Qrakn Game Events";

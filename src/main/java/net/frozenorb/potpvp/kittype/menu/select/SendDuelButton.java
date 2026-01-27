@@ -39,6 +39,7 @@ public class SendDuelButton extends Button {
     
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
+        Button.playNeutral(player);
         if (maps.size() < 1) {
             player.sendMessage(ChatColor.RED + "You must select at least one map.");
             return;

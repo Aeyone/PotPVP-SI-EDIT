@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Sets;
+import net.frozenorb.potpvp.kittype.KitType;
+import net.frozenorb.potpvp.match.MatchHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.libs.com.google.gson.reflect.TypeToken;
@@ -80,6 +83,7 @@ public final class ArenaHandler {
 
                     for (ArenaSchematic schematic : schematicList) {
                         this.schematics.put(schematic.getName(), schematic);
+
                     }
                 }
             }
@@ -198,6 +202,27 @@ public final class ArenaHandler {
      */
     public Set<ArenaSchematic> getSchematics() {
         return ImmutableSet.copyOf(schematics.values());
+    }
+
+    public void getStyleSchematics(KitType kitType, Set<String> kohiStyle, Set<String> potpvpStyle, Set<String> practiceStyle, Set<String> enabledSchematics) {
+        for (ArenaSchematic schematic : this.getSchematics()) {
+            if (MatchHandler.canUseSchematic(kitType, schematic) && schematic.isEnabled()) {
+                if (schematic.getStyle() != null) {
+                    if (schematic.getStyle().equals("Kohi")) {
+                        kohiStyle.add(schematic.getName());
+                    }
+                    if (schematic.getStyle().equals("PotPvP")) {
+                        potpvpStyle.add(schematic.getName());
+                    }
+                    if (schematic.getStyle().equals("Practice")) {
+                        practiceStyle.add(schematic.getName());
+                    }
+                }
+                if (enabledSchematics != null) {
+                    enabledSchematics.add(schematic.getName());
+                }
+            }
+        }
     }
 
     /**

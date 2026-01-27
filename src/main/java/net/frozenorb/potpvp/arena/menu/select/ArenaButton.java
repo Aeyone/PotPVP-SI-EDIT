@@ -49,10 +49,12 @@ public class ArenaButton extends Button {
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
         if (maps.contains(mapName)) {
+            Button.playFail(player);
             maps.remove(mapName);
-            
+
             player.sendMessage(ChatColor.RED + "Removed " + mapName + " from the selection.");
         } else {
+            Button.playNeutral(player);
             maps.add(mapName);
             
             player.sendMessage(ChatColor.GREEN + "Added " + mapName + " to your selection.");

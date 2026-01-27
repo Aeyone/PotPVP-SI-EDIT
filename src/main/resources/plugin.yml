@@ -1,5 +1,5 @@
 name: MineHQ-Practice
-version: 1.0.4
+version: 1.0.5
 author: A_Eyone
 main: net.frozenorb.potpvp.PotPvPSI
 depend: [ qLib ]

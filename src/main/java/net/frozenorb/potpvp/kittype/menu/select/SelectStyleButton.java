@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -15,10 +14,11 @@ import lombok.AllArgsConstructor;
 import net.frozenorb.qlib.menu.Button;
 
 @AllArgsConstructor
-public class ToggleAllButton extends Button {
+public class SelectStyleButton extends Button {
 
     private Set<String> allMaps;
     private Set<String> maps;
+    String style;
 
     @Override
     public List<String> getDescription(Player arg0) {
@@ -27,32 +27,24 @@ public class ToggleAllButton extends Button {
 
     @Override
     public Material getMaterial(Player arg0) {
-        return Material.WOOL;
-    }
-
-    @Override
-    public byte getDamageValue(Player arg0) {
-        return this.maps.isEmpty() ? DyeColor.LIME.getWoolData() : DyeColor.RED.getWoolData();
+        return maps.containsAll(allMaps) ? Material.REDSTONE_TORCH_ON : Material.LEVER;
     }
 
     @Override
     public String getName(Player arg0) {
-        return maps.isEmpty() ? ChatColor.GREEN + "Enable all maps" : ChatColor.RED + "Disable all maps";
+        return maps.containsAll(allMaps) ?
+                ChatColor.RED + "Disable all " + ChatColor.AQUA + style + " Style " + ChatColor.RED + "maps" :
+                ChatColor.GREEN + "Enable all " + ChatColor.AQUA + style + " Style " + ChatColor.GREEN + "maps";
     }
-    
+
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
         Button.playNeutral(player);
-        if (maps.isEmpty()) {
-            maps.addAll(allMaps);
+        if (maps.containsAll(allMaps)) {
+            maps.removeIf(name -> allMaps.contains(name));
         } else {
-            maps.clear();
+            maps.addAll(allMaps);
         }
     }
 
-//    @ConstructorProperties({"allMaps", "maps"})
-//    public ToggleAllButton(Set<String> allMaps, Set<String> maps) {
-//        this.allMaps = allMaps;
-//        this.maps = maps;
-//    }
 }

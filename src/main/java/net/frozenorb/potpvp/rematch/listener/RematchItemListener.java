@@ -33,20 +33,7 @@ public final class RematchItemListener extends ItemListener {
                 SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
 
                 if (settingHandler.getSetting(player, Setting.SELECT_MAP)) {
-                    new SelectArenaMenu(rematchData.getKitType(), setOfArena -> {
-                        player.closeInventory();
-
-                        String arenaName = new ArrayList<>(setOfArena).get(qLib.RANDOM.nextInt(setOfArena.size()));
-
-                        ArenaSchematic arena = null;
-
-                        for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
-                           if(schematic.getName().equals(arenaName)){
-                              arena = schematic;
-                           }
-                        }
-                        DuelCommand.duel(player, target, rematchData.getKitType(), arena);
-                    }, "Select an arena...").openMenu(player);
+                    DuelCommand.selectArena(player, target, rematchData.getKitType());
                 } else {
                     DuelCommand.duel(player, target, rematchData.getKitType());
                 }

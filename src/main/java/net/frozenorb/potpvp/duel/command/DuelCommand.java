@@ -38,6 +38,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class DuelCommand {
 
@@ -92,22 +95,9 @@ public final class DuelCommand {
                kitType -> {
                   sender.closeInventory();
                   if(settingHandler.getSetting(sender, Setting.SELECT_MAP)){
-                     new SelectArenaMenu(kitType, setOfArena -> { // setOfArena: The selected arena
-                        sender.closeInventory();
-
-                        // randomly selected arena
-                        String arenaName = new ArrayList<>(setOfArena).get(qLib.RANDOM.nextInt(setOfArena.size()));
-                        ArenaSchematic arena = null;
-
-                        for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
-                           if(schematic.getName().equals(arenaName)){
-                              arena = schematic;
-                           }
-                        }
-                        duel(sender, target, kitType, arena);
-                     }, "Select an arena...").openMenu(sender);
+                      selectArena(sender, target, kitType);
                   }else{
-                     duel(sender, target, kitType);
+                      duel(sender, target, kitType);
                   }
                },
                "Select a kit type..."
@@ -122,11 +112,52 @@ public final class DuelCommand {
         }
     }
 
-    public static void duel(Player sender, Player target, KitType kitType) {
-        duel(sender, target, kitType, null);
+    public static void selectArena(Player sender, Player target, KitType kitType) {
+         new SelectArenaMenu(
+             kitType,
+             setOfArena -> { // setOfArena: The selected arena
+                sender.closeInventory();
+
+                Set<String> kohiStyle = new HashSet<>();
+                Set<String> potpvpStyle = new HashSet<>();
+                Set<String> practiceStyle = new HashSet<>();
+
+                PotPvPSI.getInstance().getArenaHandler().getStyleSchematics(kitType, kohiStyle, potpvpStyle, practiceStyle, null);
+
+                String type = "EXACT";
+                if (setOfArena.size() > 1) {
+                    type = "RANDOM";
+                }
+                if (setOfArena.equals(kohiStyle)) {
+                    type = "Kohi";
+                }
+                if (setOfArena.equals(potpvpStyle)) {
+                    type = "PotPvP";
+                }
+                if (setOfArena.equals(practiceStyle)) {
+                    type = "Practice";
+                }
+
+                // randomly selected arena
+                String arenaName = new ArrayList<>(setOfArena).get(qLib.RANDOM.nextInt(setOfArena.size()));
+                ArenaSchematic arena = null;
+
+                for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
+                   if(schematic.getName().equals(arenaName)){
+                      arena = schematic;
+                   }
+                }
+                duel(sender, target, kitType, arena, type);
+             },
+             "Select an arena..."
+         ).openMenu(sender);
     }
 
-    public static void duel(Player sender, Player target, KitType kitType, ArenaSchematic arena) {
+    public static void duel(Player sender, Player target, KitType kitType) {
+        duel(sender, target, kitType, null, "RANDOM");
+    }
+
+    public static void duel(Player sender, Player target, KitType kitType, ArenaSchematic arena, String type) {
         if (!PotPvPValidation.canSendDuel(sender, target)) {
             return;
         }
@@ -159,16 +190,19 @@ public final class DuelCommand {
                 duelHandler.removeInvite(alreadySentInvite);
             }
         }
+        String message = ChatColor.YELLOW + ".";
+        if (type.equals("EXACT")) {
+            message = ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + ".";
+        } else if(!type.equals("RANDOM")){
+            message = ChatColor.YELLOW + " on " + ChatColor.AQUA + type + " Style " + ChatColor.YELLOW + "arena.";
+        }
 
         target.sendMessage(
             ChatColor.AQUA + sender.getName() +
             ChatColor.YELLOW + " has sent you a " +
             kitType.getColoredDisplayName() +
             ChatColor.YELLOW + " duel" +
-            (arena != null ?
-                    ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + "." :
-                    ChatColor.YELLOW + "."
-            )
+            message
         );
         target.spigot().sendMessage(createInviteNotification(sender.getName()));
 
@@ -177,10 +211,7 @@ public final class DuelCommand {
             kitType.getColoredDisplayName() +
             ChatColor.YELLOW + " duel invite to " +
             ChatColor.AQUA + target.getName() +
-            (arena != null ?
-                    ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + "." :
-                    ChatColor.YELLOW + "."
-            )
+            message
         );
         duelHandler.insertInvite(new PlayerDuelInvite(sender, target, kitType, arena));
 
