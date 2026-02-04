@@ -1,5 +1,6 @@
 package net.frozenorb.potpvp.duel.command;
 
+import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 import net.frozenorb.potpvp.PotPvPLang;
 import net.frozenorb.potpvp.PotPvPSI;
 
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class DuelCommand {
 
@@ -53,6 +55,7 @@ public final class DuelCommand {
 
         PartyHandler partyHandler = PotPvPSI.getInstance().getPartyHandler();
         LobbyHandler lobbyHandler = PotPvPSI.getInstance().getLobbyHandler();
+        SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
 
         Party senderParty = partyHandler.getParty(sender);
         Party targetParty = partyHandler.getParty(target);
@@ -73,7 +76,11 @@ public final class DuelCommand {
 
                 if (newSenderParty != null && newTargetParty != null) {
                     if (newSenderParty.isLeader(sender.getUniqueId())) {
-                        duel(sender, newSenderParty, newTargetParty, kitType);
+                        if(settingHandler.getSetting(sender, Setting.SELECT_MAP)){
+                            selectArena(sender, newSenderParty, newTargetParty, kitType);
+                        }else{
+                            duel(sender, newSenderParty, newTargetParty, kitType);
+                        }
                     } else {
                         sender.sendMessage(PotPvPLang.NOT_LEADER_OF_PARTY);
                     }
@@ -90,7 +97,6 @@ public final class DuelCommand {
                 return;
             }
 
-            SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
             new SelectKitTypeMenu(
                kitType -> {
                   sender.closeInventory();
@@ -111,31 +117,42 @@ public final class DuelCommand {
             sender.sendMessage(ChatColor.RED + "You must leave your party to duel " + target.getName() + ".");
         }
     }
+    public static void getArenas(
+        Player sender,
+        KitType kitType,
+        Consumer<Set<String>> callback
+    ) {
+        new SelectArenaMenu(
+            kitType,
+            arenas -> {
+                sender.closeInventory();
+                callback.accept(arenas);
+            },
+            "Select an arena..."
+        ).openMenu(sender);
+    }
+
+    public static ArenaSchematic getRandomArenaSchematic(Set<String> allArenas) { // randomly selected arena
+        String arenaName = new ArrayList<>(allArenas).get(qLib.RANDOM.nextInt(allArenas.size()));
+
+        for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
+           if(schematic.getName().equals(arenaName)){
+              return schematic;
+           }
+        }
+        return null;
+    }
 
     public static void selectArena(Player sender, Player target, KitType kitType) {
-         new SelectArenaMenu(
-             kitType,
-             setOfArena -> { // setOfArena: The selected arena
-                sender.closeInventory();
+        getArenas(sender, kitType, allArenas -> {
+            duel(sender, target, kitType, getRandomArenaSchematic(allArenas), allArenas.size() == 1 ? "EXACT" : "RANDOM");
+        });
+    }
 
-                String type = "EXACT";
-                if (setOfArena.size() > 1) {
-                    type = "RANDOM";
-                }
-
-                // randomly selected arena
-                String arenaName = new ArrayList<>(setOfArena).get(qLib.RANDOM.nextInt(setOfArena.size()));
-                ArenaSchematic arena = null;
-
-                for (ArenaSchematic schematic : PotPvPSI.getInstance().getArenaHandler().getSchematics()) {
-                   if(schematic.getName().equals(arenaName)){
-                      arena = schematic;
-                   }
-                }
-                duel(sender, target, kitType, arena, type);
-             },
-             "Select an arena..."
-         ).openMenu(sender);
+    public static void selectArena(Player sender, Party senderParty, Party targetParty, KitType kitType) {
+        getArenas(sender, kitType, allArenas -> {
+            duel(sender, senderParty, targetParty, kitType, getRandomArenaSchematic(allArenas), allArenas.size() == 1 ? "EXACT" : "RANDOM");
+        });
     }
 
     public static void duel(Player sender, Player target, KitType kitType) {
@@ -148,15 +165,6 @@ public final class DuelCommand {
         }
 
         DuelHandler duelHandler = PotPvPSI.getInstance().getDuelHandler();
-        DuelInvite autoAcceptInvite = duelHandler.findInvite(target, sender);
-
-        // if two players duel each other for the same thing automatically
-        // accept it to make their life a bit easier.
-        if (autoAcceptInvite != null && autoAcceptInvite.getKitType() == kitType) {
-            AcceptCommand.accept(sender, target);
-            return;
-        }
-
         DuelInvite alreadySentInvite = duelHandler.findInvite(sender, target);
 
         if (alreadySentInvite != null) {
@@ -175,10 +183,8 @@ public final class DuelCommand {
                 duelHandler.removeInvite(alreadySentInvite);
             }
         }
-        String message = ChatColor.YELLOW + ".";
-        if (type.equals("EXACT")) {
-            message = ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + ".";
-        }
+
+        String message = type.equals("RANDOM") ? ChatColor.YELLOW + "." : ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + ".";
 
         target.sendMessage(
             ChatColor.AQUA + sender.getName() +
@@ -201,21 +207,16 @@ public final class DuelCommand {
     }
 
     public static void duel(Player sender, Party senderParty, Party targetParty, KitType kitType) {
+        duel(sender, senderParty, targetParty, kitType, null, "RANDOM");
+    }
+
+    public static void duel(Player sender, Party senderParty, Party targetParty, KitType kitType, ArenaSchematic arena, String type) {
         if (!PotPvPValidation.canSendDuel(senderParty, targetParty, sender)) {
             return;
         }
 
         DuelHandler duelHandler = PotPvPSI.getInstance().getDuelHandler();
-        DuelInvite autoAcceptInvite = duelHandler.findInvite(targetParty, senderParty);
         String targetPartyLeader = UUIDUtils.name(targetParty.getLeader());
-
-        // if two players duel each other for the same thing automatically
-        // accept it to make their life a bit easier.
-        if (autoAcceptInvite != null && autoAcceptInvite.getKitType() == kitType) {
-            AcceptCommand.accept(sender, Bukkit.getPlayer(targetParty.getLeader()));
-            return;
-        }
-
         DuelInvite alreadySentInvite = duelHandler.findInvite(senderParty, targetParty);
 
         if (alreadySentInvite != null) {
@@ -229,11 +230,24 @@ public final class DuelCommand {
             }
         }
 
-        targetParty.message(ChatColor.AQUA + sender.getName() + "'s Party (" + senderParty.getMembers().size() + ")" + ChatColor.YELLOW + " has sent you a " + kitType.getColoredDisplayName() + ChatColor.YELLOW + " duel.");
+        String message = type.equals("RANDOM") ? ChatColor.YELLOW + "." : ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + ".";
+
+        targetParty.message(
+            ChatColor.AQUA + sender.getName() + "'s Party (" + senderParty.getMembers().size() + ")" +
+            ChatColor.YELLOW + " has sent you a " + kitType.getColoredDisplayName() +
+            ChatColor.YELLOW + " duel" +
+            message
+        );
+
         Bukkit.getPlayer(targetParty.getLeader()).spigot().sendMessage(createInviteNotification(sender.getName()));
 
-        sender.sendMessage(ChatColor.YELLOW + "Successfully sent a " + kitType.getColoredDisplayName() + ChatColor.YELLOW + " duel invite to " + ChatColor.AQUA + targetPartyLeader + "'s party" + ChatColor.YELLOW + ".");
-        duelHandler.insertInvite(new PartyDuelInvite(senderParty, targetParty, kitType));
+        sender.sendMessage(
+            ChatColor.YELLOW + "Successfully sent a " + kitType.getColoredDisplayName() +
+            ChatColor.YELLOW + " duel invite to " +
+            ChatColor.AQUA + targetPartyLeader + "'s party" +
+            message
+        );
+        duelHandler.insertInvite(new PartyDuelInvite(senderParty, targetParty, kitType, arena));
     }
 
     private static TextComponent[] createInviteNotification(String sender) {

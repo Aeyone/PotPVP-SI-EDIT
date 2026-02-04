@@ -3,11 +3,15 @@ package net.frozenorb.potpvp.party;
 import com.google.common.collect.ImmutableList;
 
 import net.frozenorb.potpvp.PotPvPSI;
+import net.frozenorb.potpvp.arena.ArenaSchematic;
+import net.frozenorb.potpvp.duel.command.DuelCommand;
 import net.frozenorb.potpvp.kittype.KitType;
 import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchTeam;
 import net.frozenorb.potpvp.party.menu.oddmanout.OddManOutMenu;
+import net.frozenorb.potpvp.setting.Setting;
+import net.frozenorb.potpvp.setting.SettingHandler;
 import net.frozenorb.potpvp.validation.PotPvPValidation;
 
 import org.bukkit.Bukkit;
@@ -35,18 +39,29 @@ public final class PartyUtils {
         new SelectKitTypeMenu(kitType -> {
             initiator.closeInventory();
 
-            if (party.getMembers().size() % 2 == 0) {
-                startTeamSplit(party, initiator, kitType, false);
+            SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
+            if (settingHandler.getSetting(initiator, Setting.SELECT_MAP)) {
+                DuelCommand.getArenas(initiator, kitType, allArenas -> {
+                    selectOddManOut(party, initiator, kitType, DuelCommand.getRandomArenaSchematic(allArenas));
+                });
             } else {
-                new OddManOutMenu(oddManOut -> {
-                    initiator.closeInventory();
-                    startTeamSplit(party, initiator, kitType, oddManOut);
-                }).openMenu(initiator);
+                selectOddManOut(party, initiator, kitType, null);
             }
         }, "Start a Team Split...").openMenu(initiator);
     }
 
-    public static void startTeamSplit(Party party, Player initiator, KitType kitType, boolean oddManOut) {
+    public static void selectOddManOut(Party party, Player initiator, KitType kitType, ArenaSchematic arena) {
+        if (party.getMembers().size() % 2 == 0) {
+            startTeamSplit(party, initiator, kitType, arena, false);
+        } else {
+            new OddManOutMenu(oddManOut -> {
+                initiator.closeInventory();
+                startTeamSplit(party, initiator, kitType, arena,oddManOut);
+            }).openMenu(initiator);
+        }
+    }
+
+    public static void startTeamSplit(Party party, Player initiator, KitType kitType, ArenaSchematic arena, boolean oddManOut) {
         if (!PotPvPValidation.canStartTeamSplit(party, initiator)) {
             return;
         }
@@ -78,6 +93,7 @@ public final class PartyUtils {
                 new MatchTeam(team2)
             ),
             kitType,
+            arena,
             false,
             false
         );

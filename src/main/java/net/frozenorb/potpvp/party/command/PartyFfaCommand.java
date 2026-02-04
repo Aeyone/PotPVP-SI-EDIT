@@ -2,12 +2,15 @@ package net.frozenorb.potpvp.party.command;
 
 import net.frozenorb.potpvp.PotPvPLang;
 import net.frozenorb.potpvp.PotPvPSI;
+import net.frozenorb.potpvp.duel.command.DuelCommand;
 import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.match.MatchTeam;
 import net.frozenorb.potpvp.party.Party;
 import net.frozenorb.potpvp.party.PartyHandler;
+import net.frozenorb.potpvp.setting.Setting;
+import net.frozenorb.potpvp.setting.SettingHandler;
 import net.frozenorb.potpvp.validation.PotPvPValidation;
 import net.frozenorb.qlib.command.Command;
 import net.frozenorb.qlib.command.Param;
@@ -25,6 +28,7 @@ public final class PartyFfaCommand {
     @Command(names = {"party ffa", "p ffa", "t ffa", "team ffa", "f ffa"}, permission = "")
     public static void partyFfa(Player sender) {
         PartyHandler partyHandler = PotPvPSI.getInstance().getPartyHandler();
+        SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
         Party party = partyHandler.getParty(sender);
 
         if (party == null) {
@@ -51,7 +55,14 @@ public final class PartyFfaCommand {
                     teams.add(new MatchTeam(member));
                 }
 
-                matchHandler.startMatch(teams, kitType, false, false);
+                if (settingHandler.getSetting(sender, Setting.SELECT_MAP)) {
+                    DuelCommand.getArenas(sender, kitType, allArenas ->{
+                        matchHandler.startMatch(teams, kitType, DuelCommand.getRandomArenaSchematic(allArenas), false, false);
+                    });
+                } else {
+                    matchHandler.startMatch(teams, kitType, false, false);
+                }
+
             }, "Start a Party FFA...").openMenu(sender);
         }
     }

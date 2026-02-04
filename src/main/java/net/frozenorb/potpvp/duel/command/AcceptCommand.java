@@ -79,11 +79,13 @@ public final class AcceptCommand {
         }
 
         Match match = matchHandler.startMatch(
-                ImmutableList.of(new MatchTeam(senderParty.getMembers()), new MatchTeam(targetParty.getMembers())),
-                invite.getKitType(),
-                false,
-                true // see Match#allowRematches
+            ImmutableList.of(new MatchTeam(senderParty.getMembers()), new MatchTeam(targetParty.getMembers())),
+            invite.getKitType(),
+            invite.getArena(),
+            false,
+            true // see Match#allowRematches
         );
+
 
         if (match != null) {
             // only remove invite if successful
