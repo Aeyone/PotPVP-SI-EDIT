@@ -118,24 +118,9 @@ public final class DuelCommand {
              setOfArena -> { // setOfArena: The selected arena
                 sender.closeInventory();
 
-                Set<String> kohiStyle = new HashSet<>();
-                Set<String> potpvpStyle = new HashSet<>();
-                Set<String> practiceStyle = new HashSet<>();
-
-                PotPvPSI.getInstance().getArenaHandler().getStyleSchematics(kitType, kohiStyle, potpvpStyle, practiceStyle, null);
-
                 String type = "EXACT";
                 if (setOfArena.size() > 1) {
                     type = "RANDOM";
-                }
-                if (setOfArena.equals(kohiStyle)) {
-                    type = "Kohi";
-                }
-                if (setOfArena.equals(potpvpStyle)) {
-                    type = "PotPvP";
-                }
-                if (setOfArena.equals(practiceStyle)) {
-                    type = "Practice";
                 }
 
                 // randomly selected arena
@@ -193,8 +178,6 @@ public final class DuelCommand {
         String message = ChatColor.YELLOW + ".";
         if (type.equals("EXACT")) {
             message = ChatColor.YELLOW + " on arena " + ChatColor.AQUA + arena.getName() + ".";
-        } else if(!type.equals("RANDOM")){
-            message = ChatColor.YELLOW + " on " + ChatColor.AQUA + type + " Style " + ChatColor.YELLOW + "arena.";
         }
 
         target.sendMessage(

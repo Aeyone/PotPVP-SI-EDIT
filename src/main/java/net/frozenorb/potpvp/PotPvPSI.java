@@ -193,6 +193,8 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EventListeners(), this);
         getServer().getPluginManager().registerEvents(new FakeChatGUI(), this);
 
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord"); // Register a channel to send messages to Bungee
+
         FrozenCommandHandler.registerAll(this);
         FrozenCommandHandler.registerParameterType(KitType.class, new KitTypeParameterType());
         FrozenTabHandler.setLayoutProvider(new PotPvPLayoutProvider());
