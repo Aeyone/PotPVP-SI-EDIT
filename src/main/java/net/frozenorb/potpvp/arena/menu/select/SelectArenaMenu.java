@@ -11,14 +11,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.arena.ArenaSchematic;
 import net.frozenorb.potpvp.kittype.KitType;
 import net.frozenorb.potpvp.kittype.menu.select.SendDuelButton;
 import net.frozenorb.potpvp.kittype.menu.select.ToggleAllButton;
-import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.util.Callback;
 
@@ -56,10 +53,17 @@ public class SelectArenaMenu extends PaginatedMenu {
     @Override
     public Map<Integer, Button> getGlobalButtons(Player player) {
         Map<Integer, Button> buttons = Maps.newHashMap();
-        buttons.put(45, new ToggleAllButton(allMaps, enabledSchematics));
-        buttons.put(46, new SelectStyleButton(kohiStyle, enabledSchematics, "Kohi"));
-        buttons.put(47, new SelectStyleButton(potpvpStyle, enabledSchematics, "PotPvP"));
-        buttons.put(48, new SelectStyleButton(practiceStyle, enabledSchematics, "Practice"));
+        int idx = 45;
+        buttons.put(idx ++, new ToggleAllButton(allMaps, enabledSchematics));
+        if (kohiStyle.size() > 1) {
+            buttons.put(idx ++, new SelectStyleButton(kohiStyle, enabledSchematics, "Kohi"));
+        }
+        if (potpvpStyle.size() > 1) {
+            buttons.put(idx ++, new SelectStyleButton(potpvpStyle, enabledSchematics, "PotPvP"));
+        }
+        if (practiceStyle.size() > 1) {
+            buttons.put(idx ++, new SelectStyleButton(practiceStyle, enabledSchematics, "Practice"));
+        }
         buttons.put(53, new SendDuelButton(enabledSchematics, mapsCallback));
         return buttons;
     }

@@ -34,7 +34,7 @@ public class SendDuelButton extends Button {
     
     @Override
     public String getName(Player player) {
-        return ChatColor.GREEN + "Send duel";
+        return ChatColor.GREEN + "Match Start";
     }
     
     @Override
