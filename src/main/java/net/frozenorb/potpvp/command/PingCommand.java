@@ -19,7 +19,7 @@ public class PingCommand {
     public static void ping(Player sender, @Param(name = "target", defaultValue = "self") Player target) {
         int ping = PlayerUtils.getPing(target);
 
-        sender.sendMessage(target.getDisplayName() + ChatColor.YELLOW + "'s Ping: " + ChatColor.GREEN + ping + "ms");
+        sender.sendMessage(target.getDisplayName() + ChatColor.YELLOW + "'s Ping: " + (ping > 100 ? (ping > 200 ? ChatColor.RED : ChatColor.YELLOW) : ChatColor.GREEN) + ping);
 
         if (sender.getName().equalsIgnoreCase(target.getName())) {
             Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(sender);
@@ -30,7 +30,7 @@ public class PingCommand {
 
                         if (otherPlayer != null && !otherPlayer.equals(sender)) {
                             int otherPing = PlayerUtils.getPing(otherPlayer);
-                            sender.sendMessage(otherPlayer.getDisplayName() + ChatColor.YELLOW + "'s Ping: " + ChatColor.GREEN + otherPing + "ms");
+                            sender.sendMessage(otherPlayer.getDisplayName() + ChatColor.YELLOW + "'s Ping: " + (otherPing > 100 ? (otherPing > 200 ? ChatColor.RED : ChatColor.YELLOW) : ChatColor.GREEN) + otherPing);
                         }
                     }
                 }

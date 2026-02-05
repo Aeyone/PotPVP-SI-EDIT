@@ -119,6 +119,8 @@ public final class Match {
     @Getter
     private Map<UUID, Integer> totalHits = Maps.newHashMap();
     @Getter
+    private Map<UUID, Integer> blockedHits = Maps.newHashMap();
+    @Getter
     private Map<UUID, Integer> longestCombo = Maps.newHashMap();
     @Getter
     private Map<UUID, Integer> missedPots = Maps.newHashMap();
@@ -281,6 +283,7 @@ public final class Match {
                                 kitType,
                                 kitType.getHealingMethod(),
                                 totalHits.getOrDefault(player.getUniqueId(), 0),
+                                blockedHits.getOrDefault(player.getUniqueId(),0),
                                 longestCombo.getOrDefault(player.getUniqueId(), 0),
                                 missedPots.getOrDefault(player.getUniqueId(), 0),
                                 thrownHp.getOrDefault(player.getUniqueId(), 0.0D),
@@ -521,6 +524,7 @@ public final class Match {
                         kitType,
                         kitType.getHealingMethod(),
                         totalHits.getOrDefault(player.getUniqueId(), 0),
+                        blockedHits.getOrDefault(player.getUniqueId(),0),
                         longestCombo.getOrDefault(player.getUniqueId(), 0),
                         missedPots.getOrDefault(player.getUniqueId(), 0),
                         thrownHp.getOrDefault(player.getUniqueId(), 0.0D),

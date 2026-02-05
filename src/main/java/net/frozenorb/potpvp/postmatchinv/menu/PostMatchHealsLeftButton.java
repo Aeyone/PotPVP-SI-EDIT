@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,10 +36,12 @@ final class PostMatchHealsLeftButton extends Button {
 
     @Override
     public List<String> getDescription(Player player) {
-        return ImmutableList.of(
-            ChatColor.YELLOW + UUIDUtils.name(this.player) + " had " + healsRemaining + " " + (healsRemaining == 1 ? healingMethod.getLongSingular() : healingMethod.getLongPlural()) + " left.",
-            ChatColor.YELLOW + UUIDUtils.name(this.player) + " missed " + missedHeals + " health potion" + (missedHeals == 1 ? "." : "s.")
-        );
+        List<String> list = new ArrayList<>();
+        list.add(ChatColor.YELLOW + UUIDUtils.name(this.player) + " had " + healsRemaining + " " + (healsRemaining == 1 ? healingMethod.getLongSingular() : healingMethod.getLongPlural()) + " left.");
+        if (healingMethod == HealingMethod.POTIONS) {
+            list.add(ChatColor.YELLOW + UUIDUtils.name(this.player) + " missed " + missedHeals + " health potion" + (missedHeals == 1 ? "." : "s."));
+        }
+        return list;
     }
 
     @Override

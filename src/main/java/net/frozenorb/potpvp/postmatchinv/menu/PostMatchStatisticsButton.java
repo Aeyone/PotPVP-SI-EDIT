@@ -18,6 +18,7 @@ final class PostMatchStatisticsButton extends Button {
     private final HealingMethod healingMethodUsed;
 
     private final int totalHits;
+    private final int blockedHits;
     private final int longestCombo;
 
     private final double thrownHp;
@@ -25,10 +26,11 @@ final class PostMatchStatisticsButton extends Button {
     private final double thrownDebuffs;
     private final double missedDebuffs;
 
-    PostMatchStatisticsButton(KitType kitType, HealingMethod healingMethodUsed, int totalHits, int longestCombo, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
+    PostMatchStatisticsButton(KitType kitType, HealingMethod healingMethodUsed, int totalHits, int blockedHits, int longestCombo, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
         this.kitType = kitType;
         this.healingMethodUsed = healingMethodUsed;
         this.totalHits = totalHits;
+        this.blockedHits = blockedHits;
         this.longestCombo = longestCombo;
         this.thrownHp = thrownHp;
         this.missedHp = missedHp;
@@ -44,7 +46,9 @@ final class PostMatchStatisticsButton extends Button {
     @Override
     public List<String> getDescription(Player player) {
         if (healingMethodUsed != HealingMethod.POTIONS) {
-            return ImmutableList.of(ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+            return ImmutableList.of(
+                    ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+                    ChatColor.LIGHT_PURPLE + "Blocked Hits:" + ChatColor.YELLOW.toString() + " " + this.blockedHits,
                     ChatColor.LIGHT_PURPLE + "Longest Combo:" + ChatColor.YELLOW.toString() + " " + this.longestCombo
             );
         }
@@ -52,14 +56,18 @@ final class PostMatchStatisticsButton extends Button {
 
         if (kitType.getId().equals("DEBUFF") || kitType.getId().equals("VANILLA")) {
             int debuff = getAccuracy(thrownDebuffs, missedDebuffs);
-            return ImmutableList.of(ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+            return ImmutableList.of(
+                    ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+                    ChatColor.LIGHT_PURPLE + "Blocked Hits:" + ChatColor.YELLOW.toString() + " " + this.blockedHits,
                     ChatColor.LIGHT_PURPLE + "Longest Combo:" + ChatColor.YELLOW.toString() + " " + this.longestCombo,
                     ChatColor.LIGHT_PURPLE + "Potion Accuracy: " + ChatColor.YELLOW + (heal == -1 ? "N/A" : heal + "%"),
                     ChatColor.LIGHT_PURPLE + "Debuff Accuracy: " + ChatColor.YELLOW + (debuff == -1 ? "N/A" : debuff + "%")
             );
         }
 
-        return ImmutableList.of(ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+        return ImmutableList.of(
+                ChatColor.LIGHT_PURPLE + "Hits:" + ChatColor.YELLOW.toString() + " " + this.totalHits,
+                ChatColor.LIGHT_PURPLE + "Blocked Hits:" + ChatColor.YELLOW.toString() + " " + this.blockedHits,
                 ChatColor.LIGHT_PURPLE + "Longest Combo:" + ChatColor.YELLOW.toString() + " " + this.longestCombo,
                 ChatColor.LIGHT_PURPLE + "Potion Accuracy: " + ChatColor.YELLOW + (heal == -1 ? "N/A" : heal + "%")
         );

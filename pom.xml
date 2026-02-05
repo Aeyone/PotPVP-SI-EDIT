@@ -2,14 +2,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.frozenorb</groupId>
-    <artifactId>MineHQ-Practice</artifactId>
-    <name>MineHQ-Practice</name>
-    <version>1.0.5</version>
+    <artifactId>PotPvP</artifactId>
+    <name>PotPvP</name>
+    <version>1.0.6</version>
 
     <properties>
         <minehq.mavenLevel>minehq-high</minehq.mavenLevel>
         <kotlin.version>1.3.11</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--suppress UnresolvedMavenProperty -->
+        <plugin.version>${project.version}-${git.commit.id.abbrev}</plugin.version>
     </properties>
 
     <repositories>
@@ -28,7 +30,15 @@
     </repositories>
 
     <build>
+        <finalName>${project.artifactId}-${plugin.version}</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -115,6 +125,18 @@
                             </descriptorRefs>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.9.10</version>
+                <executions>
+                <execution>
+                    <goals>
+                        <goal>revision</goal>
+                    </goals>
+                </execution>
                 </executions>
             </plugin>
         </plugins>

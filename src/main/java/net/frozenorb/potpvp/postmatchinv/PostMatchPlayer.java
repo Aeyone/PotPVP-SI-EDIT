@@ -28,6 +28,7 @@ public final class PostMatchPlayer {
     @Getter private final transient HealingMethod healingMethodUsed;
     @Getter  final KitType kitType;
     @Getter private final int totalHits;
+    @Getter private final int blockedHits;
     @Getter private final int longestCombo;
     @Getter private final int missedPots;
     @Getter private final double thrownHp;
@@ -36,7 +37,7 @@ public final class PostMatchPlayer {
     @Getter private final double missedDebuffs;
     @Getter private final int ping;
 
-    public PostMatchPlayer(Player player, KitType kitType, HealingMethod healingMethodUsed, int totalHits, int longestCombo, int missedPots, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
+    public PostMatchPlayer(Player player, KitType kitType, HealingMethod healingMethodUsed, int totalHits, int blockedHits, int longestCombo, int missedPots, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
         this.playerUuid = player.getUniqueId();
         this.lastUsername = player.getName();
         this.armor = player.getInventory().getArmorContents();
@@ -47,6 +48,7 @@ public final class PostMatchPlayer {
         this.kitType = kitType;
         this.healingMethodUsed = healingMethodUsed;
         this.totalHits = totalHits;
+        this.blockedHits = blockedHits;
         this.longestCombo = longestCombo;
         this.missedPots = missedPots;
         this.thrownHp = thrownHp;

@@ -88,6 +88,7 @@ public final class PostMatchMenu extends Menu {
                         target.getKitType(),
                         target.getHealingMethodUsed(),
                         target.getTotalHits(),
+                        target.getBlockedHits(),
                         target.getLongestCombo(),
                         target.getThrownHp(),
                         target.getMissedHp(),

@@ -27,7 +27,7 @@ public enum HealingMethod {
             int count = 0;
 
             for (ItemStack item : items) {
-                if (item != null && item.getType() == Material.GOLDEN_APPLE && item.getData().getData() == (byte) 1) {
+                if (item != null && item.getType() == Material.GOLDEN_APPLE) {
                     count += Math.max(1, item.getAmount());
                 }
             }

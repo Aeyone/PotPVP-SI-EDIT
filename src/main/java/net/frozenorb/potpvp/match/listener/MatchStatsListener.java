@@ -46,6 +46,7 @@ public class MatchStatsListener implements Listener {
         Map<UUID, UUID> lastHitMap = damagerMatch.getLastHit();
         Map<UUID, Integer> combos = damagerMatch.getCombos();
         Map<UUID, Integer> totalHits = damagerMatch.getTotalHits();
+        Map<UUID, Integer> blockedHits = damagerMatch.getBlockedHits();
         Map<UUID, Integer> longestCombo = damagerMatch.getLongestCombo();
 
         UUID lastHit = lastHitMap.put(damager.getUniqueId(), damaged.getUniqueId());
@@ -62,6 +63,9 @@ public class MatchStatsListener implements Listener {
         }
 
         totalHits.put(damager.getUniqueId(), totalHits.getOrDefault(damager.getUniqueId(), 0) + 1);
+        if (damaged.isBlocking()) {
+            blockedHits.put(damaged.getUniqueId(), blockedHits.getOrDefault(damaged.getUniqueId(), 0) + 1);
+        }
         while (lastHitMap.values().remove(damager.getUniqueId()));
     }
 
