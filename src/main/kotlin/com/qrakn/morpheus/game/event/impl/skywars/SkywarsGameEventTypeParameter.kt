@@ -163,6 +163,8 @@ object SkywarsGameEventTypeParameter : GameParameter {
                         toReturn.add(ItemStack(Material.WOOD, Random.nextInt(20) + 12))
                         toReturn.add(ItemStack(Material.COBBLESTONE, Random.nextInt(20) + 12))
                     }
+                    else -> {
+                    }
                 }
 
                 return toReturn
@@ -316,6 +318,9 @@ object SkywarsGameEventTypeParameter : GameParameter {
                     SkywarsGameEventLootTier.BUFFED -> {
                         toReturn.add(ItemStack(Material.WOOD, 32))
                         toReturn.add(ItemStack(Material.COBBLESTONE, 32))
+                    }
+                    else ->{
+
                     }
                 }
 

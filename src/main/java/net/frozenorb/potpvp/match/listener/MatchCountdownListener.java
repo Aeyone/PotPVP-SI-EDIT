@@ -49,7 +49,7 @@ public final class MatchCountdownListener implements Listener {
         ItemStack item = event.getItem();
         Material type = item.getType();
 
-        if ((type == Material.POTION && Potion.fromItemStack(item).isSplash()) || type == Material.ENDER_PEARL || type == Material.SNOW_BALL) {
+        if ((type == Material.POTION && (item.getDurability() & 0x4000) != 0) || type == Material.ENDER_PEARL || type == Material.SNOW_BALL) {
             MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
             Match match = matchHandler.getMatchPlaying(event.getPlayer());
 

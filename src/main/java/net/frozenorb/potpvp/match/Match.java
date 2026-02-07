@@ -209,6 +209,9 @@ public final class Match {
                 
                 player.teleport(spawn);
                 player.getInventory().setHeldItemSlot(0);
+                if (player.hasMetadata("Build")) {
+                    player.removeMetadata("Build", PotPvPSI.getInstance());
+                }
                 
                 FrozenNametagHandler.reloadPlayer(player);
                 FrozenNametagHandler.reloadOthersFor(player);
