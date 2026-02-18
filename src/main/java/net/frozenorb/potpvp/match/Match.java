@@ -284,7 +284,6 @@ public final class Match {
                             v -> new PostMatchPlayer(
                                 player,
                                 kitType,
-                                kitType.getHealingMethod(),
                                 totalHits.getOrDefault(player.getUniqueId(), 0),
                                 blockedHits.getOrDefault(player.getUniqueId(),0),
                                 longestCombo.getOrDefault(player.getUniqueId(), 0),
@@ -306,12 +305,32 @@ public final class Match {
         int delayTicks = MATCH_END_DELAY_SECONDS * 20;
         if (JavaPlugin.getProvidingPlugin(this.getClass()).isEnabled()) {
             // cancel match end delay
-            Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), ()->Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this)), 1);
+            Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), this::preparTerminate, 1);
             Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), this::terminateMatch, delayTicks);
         } else {
-            Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this));
+            this.preparTerminate();
             this.terminateMatch();
         }
+    }
+
+    private void preparTerminate() {
+        // if the match ends before the countdown ends
+        // we have to set this to avoid a NPE in Date#from
+        if (startedAt == null) {
+            startedAt = new Date();
+        }
+
+        // if endedAt wasn't set before (if terminateMatch was called directly)
+        // we want to make sure we set an ending time. Otherwise we keep the
+        // technically more accurate time set in endMatch
+        if (endedAt == null) {
+            endedAt = new Date();
+        }
+
+        this.winningPlayers = winner.getAllMembers();
+        this.losingPlayers = teams.stream().filter(team -> team != winner).flatMap(team -> team.getAllMembers().stream()).collect(Collectors.toSet());
+
+        Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this));
     }
     
     private void terminateMatch() {
@@ -319,25 +338,9 @@ public final class Match {
         if (state == MatchState.TERMINATED) {
             return;
         }
-        
+
         state = MatchState.TERMINATED;
-        
-        // if the match ends before the countdown ends
-        // we have to set this to avoid a NPE in Date#from
-        if (startedAt == null) {
-            startedAt = new Date();
-        }
-        
-        // if endedAt wasn't set before (if terminateMatch was called directly)
-        // we want to make sure we set an ending time. Otherwise we keep the
-        // technically more accurate time set in endMatch
-        if (endedAt == null) {
-            endedAt = new Date();
-        }
-        
-        this.winningPlayers = winner.getAllMembers();
-        this.losingPlayers = teams.stream().filter(team -> team != winner).flatMap(team -> team.getAllMembers().stream()).collect(Collectors.toSet());
-        
+
         // we have to make a few edits to the document so we use Gson (which has
         // adapters
         // for things like Locations) and then edit it
@@ -525,7 +528,6 @@ public final class Match {
                 new PostMatchPlayer(
                         player,
                         kitType,
-                        kitType.getHealingMethod(),
                         totalHits.getOrDefault(player.getUniqueId(), 0),
                         blockedHits.getOrDefault(player.getUniqueId(),0),
                         longestCombo.getOrDefault(player.getUniqueId(), 0),

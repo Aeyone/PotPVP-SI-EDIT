@@ -1,4 +1,4 @@
-package net.frozenorb.potpvp.lobby.menu;
+package net.frozenorb.potpvp.lobby.menu.spectate;
 
 import com.google.common.base.Preconditions;
 

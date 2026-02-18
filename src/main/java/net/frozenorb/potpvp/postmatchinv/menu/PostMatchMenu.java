@@ -2,8 +2,13 @@ package net.frozenorb.potpvp.postmatchinv.menu;
 
 import com.google.common.base.Preconditions;
 
+import com.google.common.collect.ImmutableList;
+import net.frozenorb.potpvp.PotPvPLang;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.kittype.HealingMethod;
+import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryMenu;
+import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryMenuButton;
+import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsMenu;
 import net.frozenorb.potpvp.postmatchinv.PostMatchInvHandler;
 import net.frozenorb.potpvp.postmatchinv.PostMatchPlayer;
 import net.frozenorb.potpvp.util.InventoryUtils;
@@ -11,24 +16,24 @@ import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.Menu;
 import net.frozenorb.qlib.util.UUIDUtils;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class PostMatchMenu extends Menu {
 
-    private final PostMatchPlayer target;
 
-    public PostMatchMenu(PostMatchPlayer target) {
+    private final PostMatchPlayer target;
+    private List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
+
+    public PostMatchMenu(PostMatchPlayer target, List<PostMatchPlayer> postMatchPlayerlist) {
         super("Inventory of " + UUIDUtils.name(target.getPlayerUuid()));
 
         this.target = Preconditions.checkNotNull(target, "target");
+        this.postMatchPlayerlist = postMatchPlayerlist;
     }
 
     @Override
@@ -67,7 +72,7 @@ public final class PostMatchMenu extends Menu {
         buttons.put(getSlot(position++, y), new PostMatchFoodLevelButton(target.getHunger()));
         buttons.put(getSlot(position++, y), new PostMatchPotionEffectsButton(target.getPotionEffects()));
 
-        HealingMethod healingMethod = target.getHealingMethodUsed();
+        HealingMethod healingMethod = target.getKitType() == null ? null : target.getKitType().getHealingMethod();
 
         if (healingMethod != null) {
             int count = healingMethod.count(targetInv.toArray(new ItemStack[targetInv.size()]));
@@ -86,31 +91,48 @@ public final class PostMatchMenu extends Menu {
                 getSlot(position++, y),
                 new PostMatchStatisticsButton(
                         target.getKitType(),
-                        target.getHealingMethodUsed(),
+                        target.getKitType() == null ? null : target.getKitType().getHealingMethod(),
                         target.getTotalHits(),
                         target.getBlockedHits(),
                         target.getLongestCombo(),
                         target.getThrownHp(),
                         target.getMissedHp(),
                         target.getThrownDebuffs(),
-                        target.getMissedDebuffs()
+                        target.getMissedDebuffs(),
+                        target.getPlayerUuid()
                 )
         );
-        // swap to other player button (for 1v1s)
-        PostMatchInvHandler postMatchInvHandler = PotPvPSI.getInstance().getPostMatchInvHandler();
-        Collection<PostMatchPlayer> postMatchPlayers = postMatchInvHandler.getPostMatchData(player.getUniqueId()).values();
+        int index = 0;
+        while (postMatchPlayerlist.get(index) != target) {
+            index ++;
+        }
+        PostMatchPlayer otherPlayer = postMatchPlayerlist.get((index + 1) % postMatchPlayerlist.size());
 
-        if (postMatchPlayers.size() == 2) {
-            PostMatchPlayer otherPlayer = null;
-
-            for (PostMatchPlayer postMatchPlayer : postMatchPlayers) {
-                if (!postMatchPlayer.getPlayerUuid().equals(target.getPlayerUuid())) {
-                    otherPlayer = postMatchPlayer;
+        buttons.put(getSlot(8, y), new PostMatchSwapTargetButton(otherPlayer, postMatchPlayerlist));
+        buttons.put(getSlot(position, y), new MatchHistoryMenuButton(target.getPlayerUuid()) {
+            @Override
+            public String getName(Player player) {
+                return  ChatColor.GREEN + "View " + target.getLastUsername() + "'s Profile";
+            }
+            @Override
+            public List<String> getDescription(Player player) {
+                return ImmutableList.of(
+                    "",
+                    ChatColor.AQUA + "Click" + ChatColor.YELLOW + " To View Match History",
+                    ChatColor.AQUA + "Shift-Click" + ChatColor.YELLOW + " To View Total Stats"
+                );
+            }
+            @Override
+            public void clicked(Player player, int slot, ClickType clickType) {
+                Button.playNeutral(player);
+                if (clickType.isShiftClick()){
+                    new StatisticsMenu(target.getPlayerUuid()).openMenu(player);
+                } else {
+                    MatchHistoryMenu menu = new MatchHistoryMenu(target.getPlayerUuid());
+                    menu.openMenuAsync(player);
                 }
             }
-
-            buttons.put(getSlot(8, y), new PostMatchSwapTargetButton(otherPlayer));
-        }
+        });
 
         return buttons;
     }

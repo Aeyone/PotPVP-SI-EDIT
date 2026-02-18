@@ -1,4 +1,4 @@
-package net.frozenorb.potpvp.lobby.menu;
+package net.frozenorb.potpvp.lobby.menu.spectate;
 
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.match.Match;

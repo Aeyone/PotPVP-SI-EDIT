@@ -43,8 +43,8 @@ public final class EloHandler {
         eloRepository = new MongoEloRepository();
     }
 
-    public int getElo(Player player, KitType kitType) {
-        return getElo(ImmutableSet.of(player.getUniqueId()), kitType);
+    public int getElo(UUID uuid, KitType kitType) {
+        return getElo(ImmutableSet.of(uuid), kitType);
     }
 
     public void setElo(Player player, KitType kitType, int newElo) {

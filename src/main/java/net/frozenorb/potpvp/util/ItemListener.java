@@ -1,8 +1,10 @@
 package net.frozenorb.potpvp.util;
 
+import net.frozenorb.qlib.menu.Button;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -46,7 +48,25 @@ public abstract class ItemListener implements Listener {
         if (preProcessPredicate != null && !preProcessPredicate.test(player)) {
             return;
         }
+        if (run(player, item)) {
+            event.setCancelled(true);
+        }
+    }
 
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        ItemStack item = event.getCurrentItem();
+        if ((preProcessPredicate != null && !preProcessPredicate.test(player)) || item == null) {
+            return;
+        }
+        if (run(player, item)) {
+            Button.playNeutral(player);
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean run(Player player, ItemStack item) {
         for (Map.Entry<ItemStack, Consumer<Player>> entry : handlers.entrySet()) {
             if (item.isSimilar(entry.getKey())) {
                 boolean permitted = canUseButton.getOrDefault(player.getUniqueId(), 0L) < System.currentTimeMillis();
@@ -56,10 +76,10 @@ public abstract class ItemListener implements Listener {
                     canUseButton.put(player.getUniqueId(), System.currentTimeMillis() + 500);
                 }
 
-                event.setCancelled(true);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     @EventHandler

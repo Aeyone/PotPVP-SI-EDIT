@@ -33,66 +33,66 @@ public final class PostMatchInvLang {
         COMMA_COMPONENT.setColor(ChatColor.YELLOW);
     }
 
-    static Object[] gen1v1PlayerInvs(UUID winner, UUID loser) {
+    static Object[] gen1v1PlayerInvs(UUID winner, UUID loser, String matchID) {
         return new Object[] {
             new TextComponent[] {
                 new TextComponent(ChatColor.GREEN + "Winner: "),
-                clickToViewLine(winner),
+                clickToViewLine(winner, matchID),
                 new TextComponent(ChatColor.GRAY + " - " + ChatColor.RED + "Loser: "),
-                clickToViewLine(loser)
+                clickToViewLine(loser, matchID)
             }
         };
     }
 
     // when viewing a 2 team match as a spectator
-    static Object[] genSpectatorInvs(MatchTeam winner, MatchTeam loser) {
+    static Object[] genSpectatorInvs(MatchTeam winner, MatchTeam loser, String matchID) {
         return new Object[] {
             WINNER,
-            clickToViewLine(winner.getAllMembers()),
+            clickToViewLine(winner.getAllMembers(), matchID),
             LOSER,
-            clickToViewLine(loser.getAllMembers()),
+            clickToViewLine(loser.getAllMembers(), matchID),
         };
     }
 
     // when viewing a 2 team match as a participant
-    static Object[] genTeamInvs(MatchTeam viewer, MatchTeam winner, MatchTeam loser) {
+    static Object[] genTeamInvs(MatchTeam viewer, MatchTeam winner, MatchTeam loser, String matchID) {
         return new Object[] {
             WINNER + (viewer == winner ? " (Your team)" : " (Enemy team)"),
-            clickToViewLine(winner.getAllMembers()),
+            clickToViewLine(winner.getAllMembers(), matchID),
             LOSER + (viewer == loser ? " (Your team)" : " (Enemy team)"),
-            clickToViewLine(loser.getAllMembers()),
+            clickToViewLine(loser.getAllMembers(), matchID),
         };
     }
 
     // when viewing a non-2 team match from any perspective
-    static Object[] genGenericInvs(Collection<MatchTeam> teams) {
+    static Object[] genGenericInvs(Collection<MatchTeam> teams, String matchID) {
         Set<UUID> members = teams.stream()
             .flatMap(t -> t.getAllMembers().stream())
             .collect(Collectors.toSet());
 
         return new Object[] {
             PARTICIPANTS,
-            clickToViewLine(members),
+            clickToViewLine(members, matchID),
         };
     }
 
-    private static TextComponent clickToViewLine(UUID member) {
+    private static TextComponent clickToViewLine(UUID member, String matchID) {
         String memberName = UUIDUtils.name(member);
         TextComponent component = new TextComponent();
 
         component.setText(memberName);
         component.setColor(ChatColor.YELLOW);
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Click to view inventory of " + ChatColor.GOLD + memberName).create()));
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/_ " + memberName));
+        component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/_ " + matchID + " " + memberName));
 
         return component;
     }
 
-    private static TextComponent[] clickToViewLine(Set<UUID> members) {
+    private static TextComponent[] clickToViewLine(Set<UUID> members, String matchID) {
         List<TextComponent> components = new ArrayList<>();
 
         for (UUID member : members) {
-            components.add(clickToViewLine(member));
+            components.add(clickToViewLine(member, matchID));
             components.add(COMMA_COMPONENT);
         }
 

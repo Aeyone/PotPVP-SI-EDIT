@@ -5,11 +5,12 @@ import net.frozenorb.potpvp.command.ManageCommand;
 import net.frozenorb.potpvp.follow.command.UnfollowCommand;
 import net.frozenorb.potpvp.lobby.LobbyHandler;
 import net.frozenorb.potpvp.lobby.LobbyItems;
-import net.frozenorb.potpvp.lobby.menu.SpectateMenu;
-import net.frozenorb.potpvp.lobby.menu.StatisticsMenu;
+import net.frozenorb.potpvp.lobby.menu.spectate.SpectateMenu;
+import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsMenu;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.match.MatchState;
+import net.frozenorb.potpvp.setting.menu.SettingsMenu;
 import net.frozenorb.potpvp.util.ItemListener;
 import net.frozenorb.potpvp.validation.PotPvPValidation;
 import net.frozenorb.qlib.qLib;
@@ -87,10 +88,14 @@ public final class LobbyItemListener extends ItemListener {
         });
 
         addHandler(LobbyItems.PLAYER_STATISTICS, player -> {
-            new StatisticsMenu().openMenu(player);
+            new StatisticsMenu(player.getUniqueId()).openMenu(player);
         });
 
         addHandler(LobbyItems.UNFOLLOW_ITEM, UnfollowCommand::unfollow);
+
+        addHandler(LobbyItems.SETTINGS_ITEM, player -> {
+            new SettingsMenu().openMenu(player);
+        });
     }
 
     @EventHandler

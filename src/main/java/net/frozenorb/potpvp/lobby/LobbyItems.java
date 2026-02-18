@@ -22,6 +22,7 @@ public final class LobbyItems {
     public static final ItemStack MANAGE_ITEM = new ItemStack(Material.ANVIL);
     public static final ItemStack UNFOLLOW_ITEM = new ItemStack(Material.INK_SACK, 1, DyeColor.RED.getDyeData());
     public static final ItemStack PLAYER_STATISTICS = new ItemStack(Material.SKULL_ITEM, 1, (byte) 3);
+    public static final ItemStack SETTINGS_ITEM = new ItemStack(Material.ITEM_FRAME);
 
     static {
         ItemUtils.setDisplayName(
@@ -70,6 +71,13 @@ public final class LobbyItems {
             PLAYER_STATISTICS, 
             LEFT_ARROW + 
             LIGHT_PURPLE.toString() + BOLD + "Statistics" + 
+            RIGHT_ARROW
+        );
+
+        ItemUtils.setDisplayName(
+            SETTINGS_ITEM,
+            LEFT_ARROW +
+            GOLD.toString() + BOLD + "Settings" +
             RIGHT_ARROW
         );
     }

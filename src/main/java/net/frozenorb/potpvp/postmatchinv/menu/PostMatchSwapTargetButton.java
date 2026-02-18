@@ -12,14 +12,17 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 final class PostMatchSwapTargetButton extends Button {
 
     private final PostMatchPlayer newTarget;
+    private List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
 
-    PostMatchSwapTargetButton(PostMatchPlayer newTarget) {
+    PostMatchSwapTargetButton(PostMatchPlayer newTarget, List<PostMatchPlayer> postMatchPlayerlist) {
         this.newTarget = Preconditions.checkNotNull(newTarget, "newTarget");
+        this.postMatchPlayerlist = postMatchPlayerlist;
     }
 
     @Override
@@ -42,7 +45,8 @@ final class PostMatchSwapTargetButton extends Button {
 
     @Override
     public void clicked(Player player, int i, ClickType clickType) {
-        new PostMatchMenu(newTarget).openMenu(player);
+        Button.playNeutral(player);
+        new PostMatchMenu(newTarget, postMatchPlayerlist).openMenu(player);
     }
 
 }

@@ -1,9 +1,7 @@
 package net.frozenorb.potpvp;
 
 import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import com.qrakn.morpheus.Morpheus;
 import com.qrakn.morpheus.game.Game;
@@ -31,9 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
-import org.spigotmc.SpigotConfig;
 
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
@@ -69,7 +65,7 @@ import net.frozenorb.potpvp.queue.QueueHandler;
 import net.frozenorb.potpvp.rematch.RematchHandler;
 import net.frozenorb.potpvp.scoreboard.PotPvPScoreboardConfiguration;
 import net.frozenorb.potpvp.setting.SettingHandler;
-import net.frozenorb.potpvp.statistics.StatisticsHandler;
+import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsHandler;
 import net.frozenorb.potpvp.tab.PotPvPLayoutProvider;
 import net.frozenorb.potpvp.tournament.TournamentHandler;
 import net.frozenorb.potpvp.fakechat.FakeChatManager;
@@ -115,7 +111,7 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private EloHandler eloHandler;
     @Getter private TournamentHandler tournamentHandler;
     @Getter private PvPClassHandler pvpClassHandler;
-
+    @Getter private StatisticsHandler statisticsHandler;
     @Getter private FakeChatManager fakeChatManager;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
@@ -169,6 +165,7 @@ public final class PotPvPSI extends JavaPlugin {
         eloHandler = new EloHandler();
         pvpClassHandler = new PvPClassHandler();
         tournamentHandler = new TournamentHandler();
+        statisticsHandler = new StatisticsHandler();
         fakeChatManager = new FakeChatManager(this);
 
         new Morpheus(this); // qrakn game events
@@ -188,10 +185,10 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PearlCooldownListener(), this);
         getServer().getPluginManager().registerEvents(new RankedMatchQualificationListener(), this);
         getServer().getPluginManager().registerEvents(new TabCompleteListener(), this);
-        getServer().getPluginManager().registerEvents(new StatisticsHandler(), this);
         getServer().getPluginManager().registerEvents(new GameListeners(), this);
         getServer().getPluginManager().registerEvents(new EventListeners(), this);
         getServer().getPluginManager().registerEvents(new FakeChatGUI(), this);
+        getServer().getPluginManager().registerEvents(statisticsHandler, this);
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord"); // Register a channel to send messages to Bungee
 

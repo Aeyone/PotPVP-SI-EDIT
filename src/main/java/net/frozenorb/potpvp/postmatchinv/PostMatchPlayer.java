@@ -2,7 +2,6 @@ package net.frozenorb.potpvp.postmatchinv;
 
 import com.google.common.collect.ImmutableList;
 
-import net.frozenorb.potpvp.kittype.HealingMethod;
 import net.frozenorb.potpvp.kittype.KitType;
 
 import net.frozenorb.qlib.util.PlayerUtils;
@@ -11,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,26 +18,46 @@ import lombok.Getter;
 
 public final class PostMatchPlayer {
 
-    @Getter private final UUID playerUuid;
-    @Getter private final String lastUsername;
-    @Getter private final ItemStack[] armor;
-    @Getter private final ItemStack[] inventory;
-    @Getter private final List<PotionEffect> potionEffects;
-    @Getter private final int hunger;
-    @Getter private final int health; // out of 10
-    @Getter private final transient HealingMethod healingMethodUsed;
-    @Getter  final KitType kitType;
-    @Getter private final int totalHits;
-    @Getter private final int blockedHits;
-    @Getter private final int longestCombo;
-    @Getter private final int missedPots;
-    @Getter private final double thrownHp;
-    @Getter private final double missedHp;
-    @Getter private final double thrownDebuffs;
-    @Getter private final double missedDebuffs;
-    @Getter private final int ping;
+    @Getter private UUID playerUuid;
+    @Getter private String lastUsername;
+    @Getter private ItemStack[] armor;
+    @Getter private ItemStack[] inventory;
+    @Getter private List<PotionEffect> potionEffects;
+    @Getter private int hunger;
+    @Getter private int health; // out of 10
+    private String kitType;
+    @Getter private int totalHits;
+    @Getter private int blockedHits;
+    @Getter private int longestCombo;
+    @Getter private int missedPots;
+    @Getter private double thrownHp;
+    @Getter private double missedHp;
+    @Getter private double thrownDebuffs;
+    @Getter private double missedDebuffs;
+    @Getter private int ping;
 
-    public PostMatchPlayer(Player player, KitType kitType, HealingMethod healingMethodUsed, int totalHits, int blockedHits, int longestCombo, int missedPots, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
+    public PostMatchPlayer() {
+        this.playerUuid = null;
+        this.lastUsername = null;
+        this.armor = new ItemStack[0];
+        this.inventory = new ItemStack[0];
+        this.potionEffects = new ArrayList<>();
+        this.hunger = 0;
+        this.health = 0;
+        this.kitType = null;
+        this.totalHits = 0;
+        this.blockedHits = 0;
+        this.longestCombo = 0;
+        this.missedPots = 0;
+        this.thrownHp = 0;
+        this.missedHp = 0;
+        this.thrownDebuffs = 0;
+        this.missedDebuffs = 0;
+        this.ping = 0;
+    }
+
+
+    public PostMatchPlayer(Player player, KitType kitType, int totalHits, int blockedHits, int longestCombo, int missedPots, double thrownHp, double missedHp, double thrownDebuffs, double missedDebuffs) {
         this.playerUuid = player.getUniqueId();
         this.lastUsername = player.getName();
         this.armor = player.getInventory().getArmorContents();
@@ -45,8 +65,7 @@ public final class PostMatchPlayer {
         this.potionEffects = ImmutableList.copyOf(player.getActivePotionEffects());
         this.hunger = player.getFoodLevel();
         this.health = (int) player.getHealth();
-        this.kitType = kitType;
-        this.healingMethodUsed = healingMethodUsed;
+        this.kitType = kitType.getId();
         this.totalHits = totalHits;
         this.blockedHits = blockedHits;
         this.longestCombo = longestCombo;
@@ -58,4 +77,7 @@ public final class PostMatchPlayer {
         this.ping = PlayerUtils.getPing(player);
     }
 
+    public KitType getKitType() {
+        return KitType.byId(this.kitType);
+    }
 }

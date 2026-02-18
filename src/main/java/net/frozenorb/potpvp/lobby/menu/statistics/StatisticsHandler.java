@@ -1,7 +1,6 @@
-package net.frozenorb.potpvp.statistics;
+package net.frozenorb.potpvp.lobby.menu.statistics;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -37,9 +36,17 @@ public class StatisticsHandler implements Listener {
         Bukkit.getScheduler().runTaskTimerAsynchronously(PotPvPSI.getInstance(), () -> {
             
             long start = System.currentTimeMillis();
-            statisticsMap.keySet().forEach(this::saveStatistics);
-            Bukkit.getLogger().info("Saved " + statisticsMap.size() + " statistics in " + (System.currentTimeMillis() - start) + "ms.");
-            
+            int siz = statisticsMap.size();
+            statisticsMap.keySet().forEach((playerUid)->{
+                saveStatistics(playerUid);
+                if (Bukkit.getPlayer(playerUid) == null) {
+                    unloadStatistics(playerUid);
+                }
+            });
+            if (siz - statisticsMap.size() > 0) {
+                Bukkit.getLogger().info("[MongoDB] Saved " + siz + " and removed " + (siz - statisticsMap.size()) + " statistics in " + (System.currentTimeMillis() - start) + "ms.");
+            }
+
         }, 30 * 20, 30 * 20);
     }
     
@@ -105,7 +112,6 @@ public class StatisticsHandler implements Listener {
     
     public void loadStatistics(UUID uuid) {
         Document document = COLLECTION.find(new Document("_id", uuid.toString())).first();
-
         if (document == null) {
             document = new Document();
         }
@@ -180,7 +186,8 @@ public class StatisticsHandler implements Listener {
 
         if (shouldUpdateWLR) {
             recalculateWLR(uuid, kitType);
-        } else if (shouldUpdateKDR) {
+        }
+        if (shouldUpdateKDR) {
             recalculateKDR(uuid, kitType);
         }
     }
@@ -224,7 +231,88 @@ public class StatisticsHandler implements Listener {
         return Objects.firstNonNull(statisticsMap.getOrDefault(uuid, ImmutableMap.of()).getOrDefault(kitType, ImmutableMap.of()).get(statistic), 0D);
     }
 
-    private static enum Statistic {
+    public boolean checkNull(UUID uuid) {
+        return statisticsMap.get(uuid) == null;
+    }
+
+//    public void fix() {
+//        FindIterable<Document> docs = COLLECTION.find().projection(new Document("_id", 1));
+//
+//        List<UUID> allUUIDs = new ArrayList<>();
+//
+//        for (Document doc : docs) {
+//            String idStr = doc.getString("_id");
+//            if (idStr != null) {
+//                allUUIDs.add(UUID.fromString(idStr));
+//            }
+//        }
+//        Bukkit.getScheduler().runTaskAsynchronously(PotPvPSI.getInstance(), () -> {
+//            for (UUID uuid : allUUIDs) {
+//                 Bukkit.getLogger().info("get: " + UUIDUtils.name(uuid));
+//                 loadStatistics(uuid);
+//            }
+//
+//            Map<String, Map<String, Map<Statistic, Double>>> playerMaps = Maps.newConcurrentMap();
+//            Map<String, List<UUID>> uuidList = Maps.newConcurrentMap();
+//
+//            for (Map.Entry<UUID, Map<String, Map<Statistic, Double>>> entry : statisticsMap.entrySet()) {
+//                UUID uuid = entry.getKey();
+//                Map<String, Map<Statistic, Double>> value1 = entry.getValue();
+//
+//                String playerName = UUIDUtils.name(uuid);
+//                Map<String, Map<Statistic, Double>> playerMap = playerMaps.computeIfAbsent(playerName, k -> Maps.newConcurrentMap());
+//
+//                List<UUID> list = uuidList.computeIfAbsent(playerName, k -> new ArrayList<>());
+//                list.add(uuid);
+//
+//                uuidList.get(UUIDUtils.name(uuid)).add(uuid);
+//
+//                for (Map.Entry<String, Map<Statistic, Double>> entry1 : value1.entrySet()) {
+//                    String kitType = entry1.getKey();
+//                    Map<Statistic, Double> stats = entry1.getValue();
+//
+//                    double kills = getStat(uuid, Statistic.KILLS, kitType);
+//                    double deaths = getStat(uuid, Statistic.DEATHS, kitType);
+//
+//                    Map<Statistic, Double> kitStats = playerMap.computeIfAbsent(kitType, k -> Maps.newConcurrentMap());
+//                    kitStats.merge(Statistic.WINS, kills, (oldVal, newVal) -> oldVal + newVal);
+//                    kitStats.merge(Statistic.LOSSES, deaths, (oldVal, newVal) -> oldVal + newVal);
+//                    kitStats.merge(Statistic.KILLS, kills, (oldVal, newVal) -> oldVal + newVal);
+//                    kitStats.merge(Statistic.DEATHS, deaths, (oldVal, newVal) -> oldVal + newVal);
+//                }
+//            }
+//
+//            for (Map.Entry<String, List<UUID>> entry : uuidList.entrySet()) {
+//                String name = entry.getKey();
+//                List<UUID> list = entry.getValue();
+//
+//                for (UUID uuid : list) {
+//                    for (Map.Entry<String, Map<Statistic, Double>> entry1 : statisticsMap.get(uuid).entrySet()) {
+//                        String kitType = entry1.getKey();
+//                        Map<Statistic, Double> realStats = playerMaps.get(name).get(kitType);
+//                        Map<Statistic, Double> stats = entry1.getValue();
+//
+//                        double kills = realStats.get(Statistic.KILLS);
+//                        double deaths = realStats.get(Statistic.DEATHS);
+//                        double wins = realStats.get(Statistic.WINS);
+//                        double losses = realStats.get(Statistic.LOSSES);
+//
+//                        stats.put(Statistic.KILLS, kills);
+//                        stats.put(Statistic.DEATHS, deaths);
+//                        stats.put(Statistic.KDR, kills / Math.max(deaths, 1));
+//
+//                        stats.put(Statistic.WINS, wins);
+//                        stats.put(Statistic.LOSSES, losses);
+//                        stats.put(Statistic.WLR, wins / Math.max(losses, 1));
+//                    }
+//
+//                }
+//            }
+//
+//        });
+//    }
+
+    public enum Statistic {
         WINS, LOSSES, WLR, KILLS, DEATHS, KDR;
     }
 

@@ -23,6 +23,7 @@ public final class PStatusCommand {
         FollowHandler followHandler = PotPvPSI.getInstance().getFollowHandler();
 
         sender.sendMessage(ChatColor.RED + target.getName() + ":");
+        sender.sendMessage("UUID: " + target.getUniqueId());
         sender.sendMessage("In match: " + matchHandler.isPlayingMatch(target));
         sender.sendMessage("In match (NC): " + noCacheIsPlayingMatch(target));
         sender.sendMessage("Spectating match: " + matchHandler.isSpectatingMatch(target));

@@ -1,4 +1,4 @@
-package net.frozenorb.potpvp.lobby.menu.statistics;
+package net.frozenorb.potpvp.lobby.menu.statistics.button;
 
 import java.util.List;
 import java.util.Map.Entry;

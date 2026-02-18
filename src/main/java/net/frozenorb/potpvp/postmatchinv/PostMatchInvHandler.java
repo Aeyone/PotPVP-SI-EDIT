@@ -29,12 +29,14 @@ public final class PostMatchInvHandler {
     // uuid -> their "view" of their last match
     // this varies per player, so we must store them all individually
     private final Map<UUID, Map<UUID, PostMatchPlayer>> playerData = new ConcurrentHashMap<>();
+    private String matchId;
 
     public PostMatchInvHandler() {
         Bukkit.getPluginManager().registerEvents(new PostMatchInvGeneralListener(), PotPvPSI.getInstance());
     }
 
     public void recordMatch(Match match) {
+        matchId = match.get_id();
         saveInventories(match);
         messagePlayers(match);
     }
@@ -131,7 +133,7 @@ public final class PostMatchInvHandler {
 
         if (teams.size() != 2) {
             // matches without 2 teams just get big 'participants' sections
-            Object[] generic = PostMatchInvLang.genGenericInvs(teams);
+            Object[] generic = PostMatchInvLang.genGenericInvs(teams, matchId);
 
             writeSpecInvMessages(match, invMessages, generic);
             writeTeamInvMessages(teams, invMessages, generic);
@@ -143,15 +145,15 @@ public final class PostMatchInvHandler {
 
         if (winnerTeam.getAllMembers().size() == 1 && loserTeam.getAllMembers().size() == 1) {
             // 1v1 messages
-            Object[] generic = PostMatchInvLang.gen1v1PlayerInvs(winnerTeam.getFirstMember(), loserTeam.getFirstMember());
+            Object[] generic = PostMatchInvLang.gen1v1PlayerInvs(winnerTeam.getFirstMember(), loserTeam.getFirstMember(), matchId);
 
             writeSpecInvMessages(match, invMessages, generic);
             writeTeamInvMessages(teams, invMessages, generic);
         } else {
             // normal 2 team messages
-            writeSpecInvMessages(match, invMessages, PostMatchInvLang.genSpectatorInvs(winnerTeam, loserTeam));
-            writeTeamInvMessages(winnerTeam, invMessages, PostMatchInvLang.genTeamInvs(winnerTeam, winnerTeam, loserTeam));
-            writeTeamInvMessages(loserTeam, invMessages, PostMatchInvLang.genTeamInvs(loserTeam, winnerTeam, loserTeam));
+            writeSpecInvMessages(match, invMessages, PostMatchInvLang.genSpectatorInvs(winnerTeam, loserTeam, matchId));
+            writeTeamInvMessages(winnerTeam, invMessages, PostMatchInvLang.genTeamInvs(winnerTeam, winnerTeam, loserTeam, matchId));
+            writeTeamInvMessages(loserTeam, invMessages, PostMatchInvLang.genTeamInvs(loserTeam, winnerTeam, loserTeam, matchId));
         }
     }
 
