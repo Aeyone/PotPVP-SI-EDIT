@@ -118,16 +118,17 @@ public final class PostMatchMenu extends Menu {
             public List<String> getDescription(Player player) {
                 return ImmutableList.of(
                     "",
-                    ChatColor.AQUA + "Click" + ChatColor.YELLOW + " To View Match History",
+                    ChatColor.AQUA + "Left-Click" + ChatColor.YELLOW + " To View Match History",
                     ChatColor.AQUA + "Shift-Click" + ChatColor.YELLOW + " To View Total Stats"
                 );
             }
             @Override
             public void clicked(Player player, int slot, ClickType clickType) {
-                Button.playNeutral(player);
                 if (clickType.isShiftClick()){
+                    Button.playNeutral(player);
                     new StatisticsMenu(target.getPlayerUuid()).openMenu(player);
-                } else {
+                } else if (clickType.isLeftClick()){
+                    Button.playNeutral(player);
                     new MatchHistoryMenu(target.getPlayerUuid()).openMenu(player);
                 }
             }

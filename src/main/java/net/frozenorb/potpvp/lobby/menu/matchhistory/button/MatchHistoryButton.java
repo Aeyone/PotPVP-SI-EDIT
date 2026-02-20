@@ -28,8 +28,6 @@ public class MatchHistoryButton extends Button {
     private Date endedAt;
     private List<String> winningPlayers = new ArrayList<>();
     private List<String> losingPlayers = new ArrayList<>();
-    private Map<UUID, PostMatchPlayer> postMatchPlayers = new HashMap<>();
-    private List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
 
     public MatchHistoryButton(Document doc, UUID target) {
         this.doc = doc;
@@ -42,15 +40,6 @@ public class MatchHistoryButton extends Button {
         this.endedAt = doc.getDate("endedAt");
         doc.getList("winningPlayers", String.class).forEach((uuidString)->{ this.winningPlayers.add(UUIDUtils.name(UUID.fromString(uuidString))); });
         doc.getList("losingPlayers", String.class).forEach((uuidString)->{ this.losingPlayers.add(UUIDUtils.name(UUID.fromString(uuidString))); });
-
-        Document postMatchPlayersDoc = doc.get("postMatchPlayers", Document.class);
-        for (String uuidStr : postMatchPlayersDoc.keySet()) {
-            Document playerDoc = postMatchPlayersDoc.get(uuidStr, Document.class);
-            this.postMatchPlayerlist.add(qLib.PLAIN_GSON.fromJson(playerDoc.toJson(), PostMatchPlayer.class));
-            if (uuidStr.equals(target.toString())) {
-                Collections.swap(this.postMatchPlayerlist, 0, this.postMatchPlayerlist.size() - 1);
-            }
-        }
     }
 
     @Override
@@ -92,6 +81,16 @@ public class MatchHistoryButton extends Button {
 
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
+        List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
+        Document postMatchPlayersDoc = doc.get("postMatchPlayers", Document.class);
+
+        for (String uuidStr : postMatchPlayersDoc.keySet()) {
+            Document playerDoc = postMatchPlayersDoc.get(uuidStr, Document.class);
+            postMatchPlayerlist.add(qLib.PLAIN_GSON.fromJson(playerDoc.toJson(), PostMatchPlayer.class));
+            if (uuidStr.equals(target.toString())) {
+                Collections.swap(postMatchPlayerlist, 0, postMatchPlayerlist.size() - 1);
+            }
+        }
         Button.playNeutral(player);
         new PostMatchMenu(postMatchPlayerlist.get(0), postMatchPlayerlist).openMenu(player);
     }

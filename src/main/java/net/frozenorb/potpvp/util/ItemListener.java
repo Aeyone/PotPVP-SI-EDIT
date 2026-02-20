@@ -48,7 +48,7 @@ public abstract class ItemListener implements Listener {
         if (preProcessPredicate != null && !preProcessPredicate.test(player)) {
             return;
         }
-        if (run(player, item)) {
+        if (run(player, item, false)) {
             event.setCancelled(true);
         }
     }
@@ -60,18 +60,20 @@ public abstract class ItemListener implements Listener {
         if ((preProcessPredicate != null && !preProcessPredicate.test(player)) || item == null) {
             return;
         }
-        if (run(player, item)) {
-            Button.playNeutral(player);
+        if (run(player, item, !event.isLeftClick())) {
+            if (event.isLeftClick()) {
+                Button.playNeutral(player);
+            }
             event.setCancelled(true);
         }
     }
 
-    private boolean run(Player player, ItemStack item) {
+    private boolean run(Player player, ItemStack item, boolean isCancelled) {
         for (Map.Entry<ItemStack, Consumer<Player>> entry : handlers.entrySet()) {
             if (item.isSimilar(entry.getKey())) {
                 boolean permitted = canUseButton.getOrDefault(player.getUniqueId(), 0L) < System.currentTimeMillis();
 
-                if (permitted) {
+                if (!isCancelled && permitted) {
                     entry.getValue().accept(player);
                     canUseButton.put(player.getUniqueId(), System.currentTimeMillis() + 500);
                 }
