@@ -3,6 +3,7 @@ package net.frozenorb.potpvp.lobby.menu.matchhistory;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.button.MatchHistoryButton;
 import net.frozenorb.potpvp.match.MatchHandler;
@@ -13,19 +14,20 @@ import net.frozenorb.qlib.util.UUIDUtils;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MatchHistoryMenu extends PaginatedMenu {
 
      private Map<Integer, Button> buttons = new HashMap<>();
      private UUID target;
+     private static MatchHistoryHandler matchHistoryHandler = PotPvPSI.getInstance().getMatchHistoryHandler();
 
      public MatchHistoryMenu(UUID target) {
          this.target = target;
+         isAutoUpdate();
          setPlaceholder(true);
      }
 
@@ -39,20 +41,33 @@ public class MatchHistoryMenu extends PaginatedMenu {
         return this.buttons;
     }
 
-    public void openMenuAsync(Player player) {
+    @Override
+    public int getMaxItemsPerPage(Player player) {
+        return 9 * 5; // top row is dedicated to switching
+    }
+
+    @Override
+    public void openMenu(Player player) {
+        super.openMenu(player);
+
         Bukkit.getScheduler().runTaskAsynchronously(PotPvPSI.getInstance(), () -> {
             MongoCollection<Document> collection = MongoUtils.getCollection(MatchHandler.MONGO_COLLECTION_NAME);
-            FindIterable<Document> result = collection.find(Filters.eq("allPlayers", target.toString())).sort(new Document("startedAt", -1));
 
-            Map<Integer, Button> buttons = new HashMap<>();
+            if (matchHistoryHandler.getMatchList(target) == null) {
+                matchHistoryHandler.loadMatchList(target);
+            }
+            List<String> matchList = matchHistoryHandler.getMatchList(target);
+
+            FindIterable<Document> result = collection.find(Filters.in("_id", matchList)).sort(Sorts.descending("startedAt"));
+
+            Map<Integer, Button> matchHistoryButtons = new HashMap<>();
             int index = 0;
             for (Document doc : result) {
-                buttons.put(index++, new MatchHistoryButton(doc, target));
+                matchHistoryButtons.put(index++, new MatchHistoryButton(doc, target));
             }
-
             Bukkit.getScheduler().runTask(PotPvPSI.getInstance(), () -> {
-                this.setButtons(buttons);
-                this.openMenu(player);
+                this.setButtons(matchHistoryButtons);
+                super.openMenu(player);
             });
         });
     }
@@ -61,8 +76,5 @@ public class MatchHistoryMenu extends PaginatedMenu {
         this.buttons = buttons;
     }
 
-    @Override
-    public int getMaxItemsPerPage(Player player) {
-        return 9 * 5; // top row is dedicated to switching
-    }
+
 }

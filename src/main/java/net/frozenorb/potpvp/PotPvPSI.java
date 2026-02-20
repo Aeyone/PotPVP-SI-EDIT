@@ -10,6 +10,7 @@ import com.qrakn.morpheus.game.GameQueue;
 import com.qrakn.morpheus.game.event.GameEvent;
 import mkremins.fanciful.FancyMessage;
 // import net.frozenorb.hydrogen.Settings;
+import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryHandler;
 import net.frozenorb.potpvp.morpheus.EventListeners;
 import net.frozenorb.potpvp.morpheus.EventTask;
 import net.frozenorb.potpvp.pvpclasses.PvPClassHandler;
@@ -112,6 +113,7 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private TournamentHandler tournamentHandler;
     @Getter private PvPClassHandler pvpClassHandler;
     @Getter private StatisticsHandler statisticsHandler;
+    @Getter private MatchHistoryHandler matchHistoryHandler;
     @Getter private FakeChatManager fakeChatManager;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
@@ -166,6 +168,7 @@ public final class PotPvPSI extends JavaPlugin {
         pvpClassHandler = new PvPClassHandler();
         tournamentHandler = new TournamentHandler();
         statisticsHandler = new StatisticsHandler();
+        matchHistoryHandler = new MatchHistoryHandler();
         fakeChatManager = new FakeChatManager(this);
 
         new Morpheus(this); // qrakn game events
@@ -189,6 +192,7 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EventListeners(), this);
         getServer().getPluginManager().registerEvents(new FakeChatGUI(), this);
         getServer().getPluginManager().registerEvents(statisticsHandler, this);
+        getServer().getPluginManager().registerEvents(matchHistoryHandler, this);
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord"); // Register a channel to send messages to Bungee
 

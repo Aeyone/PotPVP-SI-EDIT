@@ -128,8 +128,7 @@ public final class PostMatchMenu extends Menu {
                 if (clickType.isShiftClick()){
                     new StatisticsMenu(target.getPlayerUuid()).openMenu(player);
                 } else {
-                    MatchHistoryMenu menu = new MatchHistoryMenu(target.getPlayerUuid());
-                    menu.openMenuAsync(player);
+                    new MatchHistoryMenu(target.getPlayerUuid()).openMenu(player);
                 }
             }
         });

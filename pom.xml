@@ -4,7 +4,7 @@
     <groupId>net.frozenorb</groupId>
     <artifactId>PotPvP</artifactId>
     <name>PotPvP</name>
-    <version>1.0.6</version>
+    <version>LATEST</version>
 
     <properties>
         <minehq.mavenLevel>minehq-high</minehq.mavenLevel>

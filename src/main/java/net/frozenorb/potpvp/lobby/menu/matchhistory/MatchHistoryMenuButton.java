@@ -47,7 +47,6 @@ public class MatchHistoryMenuButton extends Button {
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
         Button.playNeutral(player);
-        MatchHistoryMenu menu = new MatchHistoryMenu(target);
-        menu.openMenuAsync(player);
+        new MatchHistoryMenu(target).openMenu(player);
     }
 }
