@@ -13,7 +13,7 @@ import org.bukkit.event.inventory.ClickType;
 import java.util.List;
 import java.util.function.Consumer;
 
-public final class MenuBackButton extends Button {
+public class MenuBackButton extends Button {
 
     private final Consumer<Player> openPreviousMenuConsumer;
 
@@ -42,7 +42,7 @@ public final class MenuBackButton extends Button {
 
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
-        player.closeInventory();
+        Button.playNeutral(player);
         openPreviousMenuConsumer.accept(player);
     }
 

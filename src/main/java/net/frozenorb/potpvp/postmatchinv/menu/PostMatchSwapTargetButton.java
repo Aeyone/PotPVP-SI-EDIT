@@ -19,10 +19,12 @@ final class PostMatchSwapTargetButton extends Button {
 
     private final PostMatchPlayer newTarget;
     private List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
+    private String matchId;
 
-    PostMatchSwapTargetButton(PostMatchPlayer newTarget, List<PostMatchPlayer> postMatchPlayerlist) {
+    PostMatchSwapTargetButton(PostMatchPlayer newTarget, List<PostMatchPlayer> postMatchPlayerlist, String matchId) {
         this.newTarget = Preconditions.checkNotNull(newTarget, "newTarget");
         this.postMatchPlayerlist = postMatchPlayerlist;
+        this.matchId = matchId;
     }
 
     @Override
@@ -46,7 +48,7 @@ final class PostMatchSwapTargetButton extends Button {
     @Override
     public void clicked(Player player, int i, ClickType clickType) {
         Button.playNeutral(player);
-        new PostMatchMenu(newTarget, postMatchPlayerlist).openMenu(player);
+        new PostMatchMenu(newTarget, postMatchPlayerlist, matchId).openMenu(player);
     }
 
 }

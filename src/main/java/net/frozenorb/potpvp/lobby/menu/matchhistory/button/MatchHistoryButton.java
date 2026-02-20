@@ -81,18 +81,8 @@ public class MatchHistoryButton extends Button {
 
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
-        List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
-        Document postMatchPlayersDoc = doc.get("postMatchPlayers", Document.class);
-
-        for (String uuidStr : postMatchPlayersDoc.keySet()) {
-            Document playerDoc = postMatchPlayersDoc.get(uuidStr, Document.class);
-            postMatchPlayerlist.add(qLib.PLAIN_GSON.fromJson(playerDoc.toJson(), PostMatchPlayer.class));
-            if (uuidStr.equals(target.toString())) {
-                Collections.swap(postMatchPlayerlist, 0, postMatchPlayerlist.size() - 1);
-            }
-        }
         Button.playNeutral(player);
-        new PostMatchMenu(postMatchPlayerlist.get(0), postMatchPlayerlist).openMenu(player);
+        new PostMatchMenu(this.id, this.target).openMenu(player);
     }
 
 }

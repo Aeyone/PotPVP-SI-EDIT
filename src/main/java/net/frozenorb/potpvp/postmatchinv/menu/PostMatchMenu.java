@@ -3,19 +3,25 @@ package net.frozenorb.potpvp.postmatchinv.menu;
 import com.google.common.base.Preconditions;
 
 import com.google.common.collect.ImmutableList;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import net.frozenorb.potpvp.PotPvPLang;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.kittype.HealingMethod;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryMenu;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryMenuButton;
 import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsMenu;
+import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.postmatchinv.PostMatchInvHandler;
 import net.frozenorb.potpvp.postmatchinv.PostMatchPlayer;
 import net.frozenorb.potpvp.util.InventoryUtils;
+import net.frozenorb.potpvp.util.MongoUtils;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.Menu;
+import net.frozenorb.qlib.qLib;
 import net.frozenorb.qlib.util.UUIDUtils;
 
+import org.bson.Document;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -28,12 +34,49 @@ public final class PostMatchMenu extends Menu {
 
     private final PostMatchPlayer target;
     private List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
+    private String matchId;
+    private UUID uuid;
 
-    public PostMatchMenu(PostMatchPlayer target, List<PostMatchPlayer> postMatchPlayerlist) {
-        super("Inventory of " + UUIDUtils.name(target.getPlayerUuid()));
-
+    public PostMatchMenu(PostMatchPlayer target, List<PostMatchPlayer> postMatchPlayerlist, String matchId) {
         this.target = Preconditions.checkNotNull(target, "target");
         this.postMatchPlayerlist = postMatchPlayerlist;
+        this.matchId = matchId;
+    }
+
+    public PostMatchMenu(String matchId, UUID uuid) {
+        this.matchId = matchId;
+        List<PostMatchPlayer> postMatchPlayerlist = new ArrayList<>();
+
+        MongoCollection<Document> collection = MongoUtils.getCollection(MatchHandler.MONGO_COLLECTION_NAME);
+        Document matchDoc = collection.find(Filters.eq("_id", matchId)).first();
+        if (matchDoc != null) {
+            Document postMatchPlayersDoc = matchDoc.get("postMatchPlayers", Document.class);
+
+            for (String uuidStr : postMatchPlayersDoc.keySet()) {
+                Document playerDoc = postMatchPlayersDoc.get(uuidStr, Document.class);
+                postMatchPlayerlist.add(qLib.PLAIN_GSON.fromJson(playerDoc.toJson(), PostMatchPlayer.class));
+                if (uuidStr.equals(uuid.toString())) {
+                    Collections.swap(postMatchPlayerlist, 0, postMatchPlayerlist.size() - 1);
+                }
+            }
+        }
+
+        this.target = postMatchPlayerlist.get(0);
+        this.postMatchPlayerlist = postMatchPlayerlist;
+
+    }
+    @Override
+    public String getTitle(Player player) {
+        return "Inventory of " + UUIDUtils.name(target.getPlayerUuid());
+    }
+
+    @Override
+    public void openMenu(Player player) {
+        if (this.postMatchPlayerlist.size() == 0) {
+            player.sendMessage(ChatColor.RED + "Data for " + UUIDUtils.name(this.uuid) + " in " + this.matchId + " not found.");
+            return;
+        }
+        super.openMenu(player);
     }
 
     @Override
@@ -108,7 +151,7 @@ public final class PostMatchMenu extends Menu {
         }
         PostMatchPlayer otherPlayer = postMatchPlayerlist.get((index + 1) % postMatchPlayerlist.size());
 
-        buttons.put(getSlot(8, y), new PostMatchSwapTargetButton(otherPlayer, postMatchPlayerlist));
+        buttons.put(getSlot(8, y), new PostMatchSwapTargetButton(otherPlayer, postMatchPlayerlist, matchId));
         buttons.put(getSlot(position, y), new MatchHistoryMenuButton(target.getPlayerUuid()) {
             @Override
             public String getName(Player player) {
@@ -126,10 +169,10 @@ public final class PostMatchMenu extends Menu {
             public void clicked(Player player, int slot, ClickType clickType) {
                 if (clickType.isShiftClick()){
                     Button.playNeutral(player);
-                    new StatisticsMenu(target.getPlayerUuid()).openMenu(player);
+                    new StatisticsMenu(target.getPlayerUuid(), matchId).openMenu(player);
                 } else if (clickType.isLeftClick()){
                     Button.playNeutral(player);
-                    new MatchHistoryMenu(target.getPlayerUuid()).openMenu(player);
+                    new MatchHistoryMenu(target.getPlayerUuid(), matchId).openMenu(player);
                 }
             }
         });

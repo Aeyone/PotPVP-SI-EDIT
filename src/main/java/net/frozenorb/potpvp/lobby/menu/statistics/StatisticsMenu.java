@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryMenuButton;
+import net.frozenorb.potpvp.postmatchinv.menu.PostMatchMenu;
+import net.frozenorb.potpvp.util.menu.MenuBackButton;
 import net.frozenorb.qlib.util.UUIDUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -23,11 +25,20 @@ public final class StatisticsMenu extends Menu {
 
     private static final Button BLACK_PANE = Button.fromItem(ItemBuilder.of(Material.STAINED_GLASS_PANE).data(DyeColor.BLACK.getData()).name(" ").build());
     private UUID target;
+    private String matchId = null;
 
     public StatisticsMenu(UUID target) {
-        this.target = target;
         setAutoUpdate(true);
+        this.StatisticsMenuInit(target);
+    }
 
+    public StatisticsMenu(UUID target, String matchId) {
+        this.matchId = matchId;
+        setAutoUpdate(true);
+        this.StatisticsMenuInit(target);
+    }
+    public void StatisticsMenuInit(UUID target) {
+        this.target = target;
         StatisticsHandler statisticsHandler = PotPvPSI.getInstance().getStatisticsHandler();
         if (statisticsHandler.checkNull(target)) {
             statisticsHandler.loadStatistics(target);
@@ -44,7 +55,13 @@ public final class StatisticsMenu extends Menu {
         Map<Integer, Button> buttons = new HashMap<>();
 
         buttons.put(getSlot(1, 1), new PlayerButton(target));
-        buttons.put(getSlot(1, 3), new MatchHistoryMenuButton(target));
+        if (matchId == null) {
+            buttons.put(getSlot(1, 3), new MatchHistoryMenuButton(target));
+        } else {
+            buttons.put(getSlot(1, 3), new MenuBackButton(p -> {
+                new PostMatchMenu(matchId, target).openMenu(p);
+            }));
+        }
 
         int y = 1;
         int x = 3;

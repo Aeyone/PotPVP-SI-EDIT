@@ -4,11 +4,16 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import javafx.geometry.Pos;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.button.MatchHistoryButton;
+import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsMenu;
 import net.frozenorb.potpvp.match.MatchHandler;
+import net.frozenorb.potpvp.postmatchinv.menu.PostMatchMenu;
 import net.frozenorb.potpvp.util.MongoUtils;
+import net.frozenorb.potpvp.util.menu.MenuBackButton;
 import net.frozenorb.qlib.menu.Button;
+import net.frozenorb.qlib.menu.buttons.BackButton;
 import net.frozenorb.qlib.menu.pagination.PaginatedMenu;
 import net.frozenorb.qlib.util.UUIDUtils;
 import org.bson.Document;
@@ -16,17 +21,25 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 
 import java.util.*;
 
 public class MatchHistoryMenu extends PaginatedMenu {
 
+     private static MatchHistoryHandler matchHistoryHandler = PotPvPSI.getInstance().getMatchHistoryHandler();
      private Map<Integer, Button> buttons = new HashMap<>();
      private UUID target;
-     private static MatchHistoryHandler matchHistoryHandler = PotPvPSI.getInstance().getMatchHistoryHandler();
+     private String matchId = null;
 
      public MatchHistoryMenu(UUID target) {
          this.target = target;
+         isAutoUpdate();
+         setPlaceholder(true);
+     }
+     public MatchHistoryMenu(UUID target, String matchId) {
+         this.target = target;
+         this.matchId = matchId;
          isAutoUpdate();
          setPlaceholder(true);
      }
@@ -44,6 +57,24 @@ public class MatchHistoryMenu extends PaginatedMenu {
     @Override
     public int getMaxItemsPerPage(Player player) {
         return 9 * 5; // top row is dedicated to switching
+    }
+
+    @Override
+    public Map<Integer, Button> getGlobalButtons(Player player) {
+        Map<Integer, Button> globalButtons = new HashMap<>();
+        globalButtons.put(4, new MenuBackButton( p -> {
+            if (matchId == null) {
+                new StatisticsMenu(target).openMenu(p);
+            } else {
+                new PostMatchMenu(matchId, target).openMenu(p);
+            }
+        }){
+            @Override
+            public List<String> getDescription(Player player) {
+                return Collections.emptyList();
+            }
+        });
+        return globalButtons;
     }
 
     @Override
