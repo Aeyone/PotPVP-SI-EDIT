@@ -250,7 +250,7 @@ public class Tournament {
 
         int multiplier = teamSize < 3 ? teamSize : 1;
 
-        if (this.getCurrentRound() != -1) return;
+        if (this.getCurrentRound() != -1 || Bukkit.getOnlinePlayers().size() == 0) return;
 
         Bukkit.broadcastMessage("");
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&7A &6&ltournament&7 has started. Type &6/join&7 to play. (" + (this.activeParties.size() * multiplier) + "/" + (requiredTeams * multiplier) + ")"));

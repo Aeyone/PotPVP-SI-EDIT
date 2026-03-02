@@ -161,8 +161,8 @@ public final class PostMatchMenu extends Menu {
             public List<String> getDescription(Player player) {
                 return ImmutableList.of(
                     "",
-                    ChatColor.AQUA + "Left-Click" + ChatColor.YELLOW + " To View Match History",
-                    ChatColor.AQUA + "Shift-Click" + ChatColor.YELLOW + " To View Total Stats"
+                    ChatColor.YELLOW + " View Match History " + ChatColor.GRAY + "(Left-Click)",
+                    ChatColor.YELLOW + " View Total Stats " + ChatColor.GRAY + "(Shift-Click)"
                 );
             }
             @Override

@@ -37,7 +37,7 @@ public final class CheckPostMatchInvCommand {
         if (postMatchPlayerlist.size() > 0) {
             new PostMatchMenu(postMatchPlayerlist.get(0), postMatchPlayerlist, id).openMenu(sender);
         } else {
-            new PostMatchMenu(id, target);
+            new PostMatchMenu(id, target).openMenu(sender);
         }
     }
 
