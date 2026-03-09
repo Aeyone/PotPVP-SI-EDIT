@@ -700,5 +700,13 @@ public final class Match {
     public boolean canBeBroken(Block block) {
         return (kitType.getId().equals("SPLEEF") && (block.getType() == Material.SNOW_BLOCK || block.getType() == Material.GRASS || block.getType() == Material.DIRT)) || placedBlocks.contains(block.getLocation().toVector().toBlockVector());
     }
-    
+
+    public int getAccuracy(UUID uuid) {
+        double thrown = thrownHp.getOrDefault(uuid, 0.0D) ;
+        double miss = missedHp.getOrDefault(uuid, 0.0D);
+        if (thrown == 0) {
+            return -1;
+        }
+        return (int)(100.0D - (miss / thrown) * 100);
+    }
 }

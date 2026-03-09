@@ -150,6 +150,18 @@ public enum Setting {
             ChatColor.RED + "Disable",
             true,
             (String) null
+    ),
+    SHOW_POTION_ACC(
+            ChatColor.YELLOW + "Show Potion Accuracy On The Tab List",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you will see your and opponent's",
+                    ChatColor.BLUE + "potion accuracy on the tab list."
+            ),
+            Material.POTION,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     );
 
     /**

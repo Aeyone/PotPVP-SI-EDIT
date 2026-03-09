@@ -83,6 +83,6 @@ final class PostMatchStatisticsButton extends Button {
         if (thrown == 0) {
             return -1;
         }
-        return (100 - (int) ((miss / thrown) * 100));
+        return (int)(100.0D - (miss / thrown) * 100);
     }
 }

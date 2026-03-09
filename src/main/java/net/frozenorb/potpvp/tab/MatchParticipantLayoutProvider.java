@@ -3,6 +3,8 @@ package net.frozenorb.potpvp.tab;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchTeam;
+import net.frozenorb.potpvp.setting.Setting;
+import net.frozenorb.potpvp.setting.SettingHandler;
 import net.frozenorb.qlib.tab.TabLayout;
 import net.frozenorb.qlib.util.UUIDUtils;
 import net.frozenorb.qlib.uuid.FrozenUUIDCache;
@@ -19,6 +21,18 @@ import java.util.function.BiConsumer;
 
 final class MatchParticipantLayoutProvider implements BiConsumer<Player, TabLayout> {
 
+    public static ChatColor getColor(int accuracy) {
+        if (accuracy < 60) {
+            return ChatColor.DARK_RED;
+        } else if (accuracy < 80) {
+            return ChatColor.RED;
+        } else if (accuracy < 90) {
+            return ChatColor.YELLOW;
+        } else {
+            return ChatColor.GREEN;
+        }
+    }
+
     @Override
     public void accept(Player player, TabLayout tabLayout) {
         Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(player);
@@ -29,29 +43,44 @@ final class MatchParticipantLayoutProvider implements BiConsumer<Player, TabLayo
             // this method won't be called if the player isn't a participant
             MatchTeam ourTeam = match.getTeam(player.getUniqueId());
             MatchTeam otherTeam = teams.get(0) == ourTeam ? teams.get(1) : teams.get(0);
+            SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
 
             boolean duel = ourTeam.getAllMembers().size() == 1 && otherTeam.getAllMembers().size() == 1;
 
             {
                 // Column 1
                 // we handle duels a bit differently
+                int y = 3;
                 if (!duel) {
-                    tabLayout.set(0, 3, ChatColor.GREEN + ChatColor.BOLD.toString() + "Team " + ChatColor.GREEN + "(" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size() + ")");
+                    tabLayout.set(0, y, ChatColor.GREEN + ChatColor.BOLD.toString() + "Team " + ChatColor.GREEN + "(" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size() + ")");
                 } else {
-                    tabLayout.set(0, 3, ChatColor.GREEN + ChatColor.BOLD.toString() + "You");
+                    int accuracy = match.getAccuracy(ourTeam.getFirstMember());
+                    if (accuracy != -1 && settingHandler.getSetting(player, Setting.SHOW_POTION_ACC)) {
+                        tabLayout.set(0, y, ChatColor.GRAY + "Accuracy: " + getColor(accuracy) + accuracy + "%");
+                        y += 2;
+                    }
+                    tabLayout.set(0, y, ChatColor.GREEN + ChatColor.BOLD.toString() + "You");
+
                 }
-                renderTeamMemberOverviewEntries(tabLayout, ourTeam, 0, 4, ChatColor.GREEN);
+                renderTeamMemberOverviewEntries(tabLayout, ourTeam, 0, y + 1, ChatColor.GREEN);
             }
 
             {
                 // Column 3
                 // we handle duels a bit differently
+                int y = 3;
                 if (!duel) {
-                    tabLayout.set(2, 3, ChatColor.RED + ChatColor.BOLD.toString() + "Enemies " + ChatColor.RED + "(" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size() + ")");
+                    tabLayout.set(2, y, ChatColor.RED + ChatColor.BOLD.toString() + "Enemies " + ChatColor.RED + "(" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size() + ")");
                 } else {
-                    tabLayout.set(2, 3, ChatColor.RED + ChatColor.BOLD.toString() + "Opponent");
+                    int accuracy = match.getAccuracy(otherTeam.getFirstMember());
+                    if (accuracy != -1 && settingHandler.getSetting(player, Setting.SHOW_POTION_ACC)) {
+                        tabLayout.set(2, y, ChatColor.GRAY + "Accuracy: " + getColor(accuracy) + accuracy + "%");
+                        y += 2;
+                    }
+                    tabLayout.set(2, y, ChatColor.RED + ChatColor.BOLD.toString() + "Opponent");
+
                 }
-                renderTeamMemberOverviewEntries(tabLayout, otherTeam, 2, 4, ChatColor.RED);
+                renderTeamMemberOverviewEntries(tabLayout, otherTeam, 2, y + 1, ChatColor.RED);
             }
         } else { // it's an FFA or something else like that
             tabLayout.set(1, 3, ChatColor.BLUE + ChatColor.BOLD.toString() + "Party FFA");
