@@ -140,6 +140,7 @@ public final class LobbyUtils {
             if (queueHandler.isQueuedRanked(player.getUniqueId())) {
                 inventory.setItem(8, QueueItems.LEAVE_SOLO_UNRANKED_QUEUE_ITEM);
             } else if (queueHandler.isQueuedUnranked(player.getUniqueId())) {
+//                inventory.setItem(1, LobbyItems.FIGHT_WITH_BOT_ITEM);
                 inventory.setItem(8, QueueItems.LEAVE_SOLO_RANKED_QUEUE_ITEM);
             } else {
                 inventory.setItem(0, QueueItems.JOIN_SOLO_UNRANKED_QUEUE_ITEM);

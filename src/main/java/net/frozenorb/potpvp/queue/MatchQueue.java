@@ -88,7 +88,7 @@ public final class MatchQueue {
         entries.remove(entry);
     }
 
-    private void createMatchAndRemoveEntries(MatchQueueEntry entryA, MatchQueueEntry entryB) {
+    public void createMatchAndRemoveEntries(MatchQueueEntry entryA, MatchQueueEntry entryB) {
         MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
         QueueHandler queueHandler = PotPvPSI.getInstance().getQueueHandler();
 

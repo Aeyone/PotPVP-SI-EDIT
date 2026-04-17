@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import net.frozenorb.potpvp.bot.BotManager;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -372,13 +373,19 @@ public final class Match {
             arena.restore();
         PotPvPSI.getInstance().getArenaHandler().releaseArena(arena);
         matchHandler.removeMatch(this);
-        
+
+        BotManager botManager = PotPvPSI.getInstance().getBotManager();
         getTeams().forEach(team -> {
             team.getAllMembers().forEach(player -> {
                 if (team.isAlive(player)) {
                     playingCache.remove(player);
                     spectateCache.remove(player);
-                    lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+
+                    if (botManager.getList().contains(UUIDUtils.name(player))) {
+                        botManager.delBot(UUIDUtils.name(player));
+                    } else {
+                        lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+                    }
                 }
             });
         });
@@ -387,7 +394,11 @@ public final class Match {
             if (Bukkit.getPlayer(player) != null) {
                 playingCache.remove(player);
                 spectateCache.remove(player);
-                lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+                if (botManager.getList().contains(UUIDUtils.name(player))) {
+                    botManager.delBot(UUIDUtils.name(player));
+                } else {
+                    lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+                }
             }
         });
     }

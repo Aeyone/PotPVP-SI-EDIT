@@ -76,7 +76,7 @@ public final class QueueItemListener extends ItemListener {
 
             if (PotPvPValidation.canJoinQueue(player)) {
                 new CustomSelectKitTypeMenu(kitType -> {
-                    queueHandler.joinQueue(player, kitType, ranked);
+                    queueHandler.joinQueue(player, kitType, ranked, null);
                     player.closeInventory();
                 }, ranked ? selectionAdditionRanked : selectionAdditionUnranked, "Join " + (ranked ? "Ranked" : "Unranked") + " Queue...", ranked).openMenu(player);
             }

@@ -71,6 +71,10 @@ public final class KitSelectionListener implements Listener {
                 }
 
             } else {
+                if (PotPvPSI.getInstance().getBotManager().getList().contains(player.getName())) {
+                    Kit.ofDefaultKit(kitType).apply(player);
+                    continue;
+                }
                 // if they have no kits saved place default in 0, otherwise
                 // the default goes in 9 and they get custom kits from 1-4
                 if (customKits.isEmpty()) {

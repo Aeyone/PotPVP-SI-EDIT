@@ -273,7 +273,7 @@ public class FakeChatConfig {
         return suffixes.isEmpty() ? "123" : suffixes.get(random.nextInt(suffixes.size()));
     }
 
-    private String generateRandomNickname() {
+    public String generateRandomNickname() {
         return getRandomPrefix() + getRandomSuffix();
     }
 

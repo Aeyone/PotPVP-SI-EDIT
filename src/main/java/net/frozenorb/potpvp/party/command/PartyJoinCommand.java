@@ -15,6 +15,10 @@ public final class PartyJoinCommand {
     // default value for password parameter used to detect that password
     // wasn't provided. No Optional<String> :(
     private static final String NO_PASSWORD_PROVIDED = "skasjkdasdjhksahjd";
+    @Command(names = {"party joinme", "p joinme", "t joinme", "team joinme", "f joinme"}, permission = "op")
+    public static void partyJoinMe(Player sender, @Param(name = "player") Player target, @Param(name = "password", defaultValue = NO_PASSWORD_PROVIDED) String providedPassword) {
+        partyJoin(target, sender, providedPassword);
+    }
 
     @Command(names = {"party join", "p join", "t join", "team join", "f join"}, permission = "")
     public static void partyJoin(Player sender, @Param(name = "player") Player target, @Param(name = "password", defaultValue = NO_PASSWORD_PROVIDED) String providedPassword) {

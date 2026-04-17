@@ -10,6 +10,10 @@ import com.qrakn.morpheus.game.GameQueue;
 import com.qrakn.morpheus.game.event.GameEvent;
 import mkremins.fanciful.FancyMessage;
 // import net.frozenorb.hydrogen.Settings;
+import net.frozenorb.potpvp.bot.BotManager;
+import net.frozenorb.potpvp.bot.BotMatchManager;
+import net.frozenorb.potpvp.bot.RedisManager;
+import net.frozenorb.potpvp.bot.listener.BotListener;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryHandler;
 import net.frozenorb.potpvp.morpheus.EventListeners;
 import net.frozenorb.potpvp.morpheus.EventTask;
@@ -80,6 +84,7 @@ import net.frozenorb.qlib.serialization.LocationAdapter;
 import net.frozenorb.qlib.serialization.PotionEffectAdapter;
 import net.frozenorb.qlib.serialization.VectorAdapter;
 import net.frozenorb.qlib.tab.FrozenTabHandler;
+import redis.clients.jedis.JedisPool;
 
 public final class PotPvPSI extends JavaPlugin {
 
@@ -115,8 +120,12 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private StatisticsHandler statisticsHandler;
     @Getter private MatchHistoryHandler matchHistoryHandler;
     @Getter private FakeChatManager fakeChatManager;
+    @Getter private BotManager botManager;
+    @Getter private RedisManager redisManager;
+    @Getter private BotMatchManager botMatchManager;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
+    private static String CHANNEL = "bot-chat";
 
     @Override
     public void onEnable() {
@@ -126,6 +135,7 @@ public final class PotPvPSI extends JavaPlugin {
         saveDefaultConfig();
 
         setupMongo();
+        setupRedis();
 
         for (World world : Bukkit.getWorlds()) {
             world.setGameRuleValue("doDaylightCycle", "false");
@@ -170,6 +180,8 @@ public final class PotPvPSI extends JavaPlugin {
         statisticsHandler = new StatisticsHandler();
         matchHistoryHandler = new MatchHistoryHandler();
         fakeChatManager = new FakeChatManager(this);
+        botManager = new BotManager();
+        botMatchManager = new BotMatchManager();
 
         new Morpheus(this); // qrakn game events
         new EventTask().runTaskTimerAsynchronously(this, 1L, 1L);
@@ -193,6 +205,7 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new FakeChatGUI(), this);
         getServer().getPluginManager().registerEvents(statisticsHandler, this);
         getServer().getPluginManager().registerEvents(matchHistoryHandler, this);
+        getServer().getPluginManager().registerEvents(new BotListener(), this);
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord"); // Register a channel to send messages to Bungee
 
@@ -237,6 +250,7 @@ public final class PotPvPSI extends JavaPlugin {
             PvPClassHandler.getEquippedKits().get(playerName).remove(getServer().getPlayerExact(playerName));
         }
 
+        redisManager.shutdown();
         instance = null;
     }
 
@@ -248,6 +262,15 @@ public final class PotPvPSI extends JavaPlugin {
 
         String databaseId = getConfig().getString("Mongo.Database");
         mongoDatabase = mongoClient.getDatabase(databaseId);
+    }
+
+    private void setupRedis() {
+        redisManager = new RedisManager(new JedisPool(
+            getConfig().getString("Redis.Host", "127.0.0.1"),
+            getConfig().getInt("Redis.Port", 6379)
+        ), CHANNEL);
+
+        redisManager.start();
     }
 
     // This is here because chunk snapshots are (still) being deserialized, and serialized sometimes.

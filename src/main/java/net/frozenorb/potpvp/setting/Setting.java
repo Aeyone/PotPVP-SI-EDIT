@@ -162,6 +162,18 @@ public enum Setting {
             ChatColor.RED + "Disable",
             true,
             (String) null
+    ),
+    FAMOUS_JOIN_QUEUE(
+            ChatColor.AQUA + "Random Famous Queue",
+            ImmutableList.of(
+                    ChatColor.BLUE + "If enabled, you will be matched with a random",
+                    ChatColor.BLUE + "famous player after a short random delay."
+            ),
+            Material.GOLD_SWORD,
+            ChatColor.GREEN + "Enable",
+            ChatColor.RED + "Disable",
+            true,
+            (String) null
     );
 
     /**

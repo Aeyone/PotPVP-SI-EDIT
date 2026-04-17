@@ -23,6 +23,11 @@ import org.bukkit.entity.Player;
 
 public final class AcceptCommand {
 
+    @Command(names = {"opAccept"}, permission = "op")
+    public static void opAccept(Player sender, @Param(name = "player") Player target) {
+        accept(target, sender);
+    }
+
     @Command(names = {"accept"}, permission = "")
     public static void accept(Player sender, @Param(name = "player") Player target) {
         if (sender == target) {

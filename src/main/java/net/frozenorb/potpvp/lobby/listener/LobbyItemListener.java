@@ -3,6 +3,7 @@ package net.frozenorb.potpvp.lobby.listener;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.command.ManageCommand;
 import net.frozenorb.potpvp.follow.command.UnfollowCommand;
+import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
 import net.frozenorb.potpvp.lobby.LobbyHandler;
 import net.frozenorb.potpvp.lobby.LobbyItems;
 import net.frozenorb.potpvp.lobby.menu.spectate.SpectateMenu;
@@ -10,6 +11,7 @@ import net.frozenorb.potpvp.lobby.menu.statistics.StatisticsMenu;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.match.MatchState;
+import net.frozenorb.potpvp.setting.Setting;
 import net.frozenorb.potpvp.setting.menu.SettingsMenu;
 import net.frozenorb.potpvp.util.ItemListener;
 import net.frozenorb.potpvp.validation.PotPvPValidation;
@@ -24,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static net.frozenorb.potpvp.bot.command.BotCommand.duelBot;
+import static net.frozenorb.potpvp.duel.command.DuelCommand.getArenas;
 
 public final class LobbyItemListener extends ItemListener {
 
@@ -95,6 +100,10 @@ public final class LobbyItemListener extends ItemListener {
 
         addHandler(LobbyItems.SETTINGS_ITEM, player -> {
             new SettingsMenu().openMenu(player);
+        });
+
+        addHandler(LobbyItems.FIGHT_WITH_BOT_ITEM, player -> {
+            duelBot(player);
         });
     }
 

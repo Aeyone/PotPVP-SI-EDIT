@@ -23,61 +23,69 @@ public final class LobbyItems {
     public static final ItemStack UNFOLLOW_ITEM = new ItemStack(Material.INK_SACK, 1, DyeColor.RED.getDyeData());
     public static final ItemStack PLAYER_STATISTICS = new ItemStack(Material.SKULL_ITEM, 1, (byte) 3);
     public static final ItemStack SETTINGS_ITEM = new ItemStack(Material.ITEM_FRAME);
+    public static final ItemStack FIGHT_WITH_BOT_ITEM = new ItemStack(Material.GOLD_SWORD);
 
     static {
         ItemUtils.setDisplayName(
             SPECTATE_RANDOM_ITEM, 
             LEFT_ARROW + 
-            YELLOW.toString() + BOLD + "Spectate Random Match" + 
+            YELLOW + BOLD + "Spectate Random Match" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             SPECTATE_MENU_ITEM, 
             LEFT_ARROW + 
-            GREEN.toString() + BOLD + "Spectate Menu" + 
+            GREEN + BOLD + "Spectate Menu" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             ENABLE_SPEC_MODE_ITEM, 
             LEFT_ARROW + 
-            AQUA.toString() + BOLD + "Enable Spectator Mode" + 
+            AQUA + BOLD + "Enable Spectator Mode" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             DISABLE_SPEC_MODE_ITEM, 
             LEFT_ARROW + 
-            RED.toString() + BOLD + "Disable Spectator Mode" + 
+            RED + BOLD + "Disable Spectator Mode" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             MANAGE_ITEM, 
             LEFT_ARROW + 
-            GRAY.toString() + BOLD + "Manage Practice" +
+            GRAY + BOLD + "Manage Practice" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             UNFOLLOW_ITEM, 
             LEFT_ARROW + 
-            RED.toString() + BOLD + "Stop Following" + 
+            RED + BOLD + "Stop Following" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             PLAYER_STATISTICS, 
             LEFT_ARROW + 
-            LIGHT_PURPLE.toString() + BOLD + "Statistics" + 
+            LIGHT_PURPLE + BOLD + "Statistics" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             SETTINGS_ITEM,
             LEFT_ARROW +
-            GOLD.toString() + BOLD + "Settings" +
+            GOLD + BOLD + "Settings" +
+            RIGHT_ARROW
+        );
+
+        ItemUtils.setDisplayName(
+            FIGHT_WITH_BOT_ITEM,
+            LEFT_ARROW +
+            YELLOW + BOLD + "Fight With Bot" +
             RIGHT_ARROW
         );
     }

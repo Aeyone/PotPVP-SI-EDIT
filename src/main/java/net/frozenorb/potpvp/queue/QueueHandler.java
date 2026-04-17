@@ -5,9 +5,11 @@ import com.google.common.collect.Table;
 
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.kittype.KitType;
+import net.frozenorb.potpvp.lobby.LobbyItems;
 import net.frozenorb.potpvp.party.Party;
 import net.frozenorb.potpvp.queue.listener.QueueGeneralListener;
 import net.frozenorb.potpvp.queue.listener.QueueItemListener;
+import net.frozenorb.potpvp.setting.Setting;
 import net.frozenorb.potpvp.util.InventoryUtils;
 import net.frozenorb.potpvp.validation.PotPvPValidation;
 
@@ -18,6 +20,7 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.Getter;
 
@@ -78,7 +81,7 @@ public final class QueueHandler {
                partyQueues.get(kitType, ranked).countPlayersQueued();
     }
 
-    public boolean joinQueue(Player player, KitType kitType, boolean ranked) {
+    public boolean joinQueue(Player player, KitType kitType, boolean ranked, UUID target) {
         if (!PotPvPValidation.canJoinQueue(player)) {
             return false;
         }
@@ -91,6 +94,21 @@ public final class QueueHandler {
 
         player.sendMessage(String.format(JOIN_SOLO_MESSAGE, ranked ? "ranked" : "unranked", kitType.getColoredDisplayName()));
         InventoryUtils.resetInventoryDelayed(player);
+
+        if (target != null) {
+            queue.createMatchAndRemoveEntries(entry, soloQueueCache.get(target));
+            return true;
+        }
+
+        if (!ranked && PotPvPSI.getInstance().getSettingHandler().getSetting(player, Setting.FAMOUS_JOIN_QUEUE) && target == null) {
+            long delayTicks = 20L * ThreadLocalRandom.current().nextInt(1 , 8);
+            Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), () -> {
+                if (isQueued(player.getUniqueId())) {
+                    PotPvPSI.getInstance().getBotMatchManager().prepareQueue(Bukkit.getPlayer(entry.getMembers().iterator().next()), kitType);
+                }
+            }, delayTicks);
+        }
+
         return true;
     }
 
