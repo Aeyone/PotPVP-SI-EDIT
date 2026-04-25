@@ -34,12 +34,30 @@ public class MatchHistoryButton extends Button {
         this.target = target;
         this.id = doc.getString("_id");
         this.kitType = KitType.byId(doc.getString("kitType"));
-        this.ranked = doc.getBoolean("ranked");
+        this.ranked = Boolean.TRUE.equals(doc.getBoolean("ranked"));
         this.arena = doc.getString("arena");
         this.startedAt = doc.getDate("startedAt");
         this.endedAt = doc.getDate("endedAt");
-        doc.getList("winningPlayers", String.class).forEach((uuidString)->{ this.winningPlayers.add(UUIDUtils.name(UUID.fromString(uuidString))); });
-        doc.getList("losingPlayers", String.class).forEach((uuidString)->{ this.losingPlayers.add(UUIDUtils.name(UUID.fromString(uuidString))); });
+        addPlayerNames(doc.getList("winningPlayers", String.class), this.winningPlayers);
+        addPlayerNames(doc.getList("losingPlayers", String.class), this.losingPlayers);
+    }
+
+    private void addPlayerNames(List<String> playerUuids, List<String> playerNames) {
+        if (playerUuids == null) {
+            return;
+        }
+
+        playerUuids.stream()
+            .filter(Objects::nonNull)
+            .forEach(uuidString -> playerNames.add(UUIDUtils.name(UUID.fromString(uuidString))));
+    }
+
+    private String formatPlayers(List<String> players, String fallback) {
+        return players.isEmpty() ? fallback : String.join(", ", players);
+    }
+
+    private String formatDate(Date date) {
+        return date == null ? "Unknown" : new SimpleDateFormat("MMM dd yyyy EEE hh:mm:ss a", Locale.ENGLISH).format(date);
     }
 
     @Override
@@ -55,13 +73,13 @@ public class MatchHistoryButton extends Button {
     public List<String> getDescription(Player player) {
         List<String> description = Lists.newArrayList();
         description.add(ChatColor.GRAY.toString() + ChatColor.STRIKETHROUGH + "--------------------------------");
-        description.add(ChatColor.AQUA + "Arena: " + ChatColor.WHITE + arena + ChatColor.GRAY + " (#" + (id == null ? "unknown" : id) + ")");
+        description.add(ChatColor.AQUA + "Arena: " + ChatColor.WHITE + (arena == null ? "unknown" : arena) + ChatColor.GRAY + " (#" + (id == null ? "unknown" : id) + ")");
         description.add("");
-        description.add(ChatColor.GREEN + "Winner: " + ChatColor.YELLOW + String.join(", ", winningPlayers));
-        description.add(ChatColor.RED + "Loser: " + ChatColor.YELLOW + String.join(", ", losingPlayers));
+        description.add(ChatColor.GREEN + "Winner: " + ChatColor.YELLOW + formatPlayers(winningPlayers, "None"));
+        description.add(ChatColor.RED + "Loser: " + ChatColor.YELLOW + formatPlayers(losingPlayers, "None"));
         description.add("");
-        description.add(ChatColor.LIGHT_PURPLE + "Started at: " + ChatColor.WHITE + new SimpleDateFormat("MMM dd yyyy EEE hh:mm:ss a", Locale.ENGLISH).format(startedAt));
-        description.add(ChatColor.LIGHT_PURPLE + "Ended at: " + ChatColor.WHITE + new SimpleDateFormat("MMM dd yyyy EEE hh:mm:ss a", Locale.ENGLISH).format(endedAt));
+        description.add(ChatColor.LIGHT_PURPLE + "Started at: " + ChatColor.WHITE + formatDate(startedAt));
+        description.add(ChatColor.LIGHT_PURPLE + "Ended at: " + ChatColor.WHITE + formatDate(endedAt));
         description.add("");
         description.add(ChatColor.YELLOW + "Click here to view Inventories.");
         description.add(ChatColor.GRAY.toString() + ChatColor.STRIKETHROUGH + "--------------------------------");

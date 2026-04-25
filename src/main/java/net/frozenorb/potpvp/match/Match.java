@@ -328,8 +328,17 @@ public final class Match {
             endedAt = new Date();
         }
 
-        this.winningPlayers = winner.getAllMembers();
-        this.losingPlayers = teams.stream().filter(team -> team != winner).flatMap(team -> team.getAllMembers().stream()).collect(Collectors.toSet());
+        if (winner == null) {
+            // Force-ended matches may not have a winner at all.
+            this.winningPlayers = Sets.newHashSet();
+            this.losingPlayers = Sets.newHashSet();
+        } else {
+            this.winningPlayers = Sets.newHashSet(winner.getAllMembers());
+            this.losingPlayers = teams.stream()
+                .filter(team -> team != winner)
+                .flatMap(team -> team.getAllMembers().stream())
+                .collect(Collectors.toSet());
+        }
 
         Bukkit.getPluginManager().callEvent(new MatchTerminateEvent(this));
     }
@@ -347,7 +356,7 @@ public final class Match {
         // for things like Locations) and then edit it
         JsonObject document = PotPvPSI.getGson().toJsonTree(this).getAsJsonObject();
         
-        document.addProperty("winner", teams.indexOf(winner)); // replace the full team with their index in the full list
+        document.addProperty("winner", winner == null ? -1 : teams.indexOf(winner)); // replace the full team with their index in the full list
         document.addProperty("arena", arena.getSchematic()); // replace the full arena with its schematic (website doesn't care which copy we
                                                              // used)
         

@@ -19,8 +19,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class MatchHistoryHandler implements Listener {
@@ -87,12 +89,21 @@ public class MatchHistoryHandler implements Listener {
         }
 
         String id = match.get_id();
-        for (UUID uuid : match.getWinningPlayers()) {
-            if (uuid != null && getMatchList(uuid) != null) {
-                addMatch(uuid, id);
-            }
+        Set<UUID> historyPlayers = new HashSet<>();
+
+        if (match.getWinningPlayers() != null) {
+            historyPlayers.addAll(match.getWinningPlayers());
         }
-        for (UUID uuid : match.getLosingPlayers()) {
+
+        if (match.getLosingPlayers() != null) {
+            historyPlayers.addAll(match.getLosingPlayers());
+        }
+
+        if (historyPlayers.isEmpty() && match.getAllPlayers() != null) {
+            historyPlayers.addAll(match.getAllPlayers());
+        }
+
+        for (UUID uuid : historyPlayers) {
             if (uuid != null && getMatchList(uuid) != null) {
                 addMatch(uuid, id);
             }

@@ -104,7 +104,7 @@ public class BotManager {
         config.put("jumpProbability", random.nextDouble(0.06, 0.18));
         config.put("wtapProbability", random.nextDouble(0.4, 0.9) + difficulty * 2 / 10);
         config.put("latency", PING_LEVELS[random.nextInt(0, 10)]);
-        config.put("targetSearchRange", 64);
+        config.put("targetSearchRange", 256);
         config.put("pearlCooldown", random.nextInt(20, 32));
 
         send(new RedisPacket("add", config));

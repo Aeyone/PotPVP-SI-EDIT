@@ -131,8 +131,8 @@ public final class PostMatchInvHandler {
     private void createInvMessages(Match match, Map<UUID, Object[]> invMessages) {
         List<MatchTeam> teams = match.getTeams();
 
-        if (teams.size() != 2) {
-            // matches without 2 teams just get big 'participants' sections
+        if (teams.size() != 2 || match.getWinner() == null) {
+            // matches without a resolved winner just get big 'participants' sections
             Object[] generic = PostMatchInvLang.genGenericInvs(teams, matchId);
 
             writeSpecInvMessages(match, invMessages, generic);
