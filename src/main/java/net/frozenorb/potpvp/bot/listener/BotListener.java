@@ -76,6 +76,8 @@ public class BotListener implements Listener {
             }
             default:{}
         }
+        botMatchManager.getPendingBot().remove(player.getName());
+
         Bukkit.getScheduler().runTaskLater( PotPvPSI.getInstance(), ()-> {
             if (!PotPvPSI.getInstance().getMatchHandler().isPlayingMatch(player)) {
                 PotPvPSI.getInstance().getBotManager().delBot(player.getName());

@@ -28,8 +28,10 @@ final class MatchParticipantLayoutProvider implements BiConsumer<Player, TabLayo
             return ChatColor.RED;
         } else if (accuracy < 90) {
             return ChatColor.YELLOW;
-        } else {
+        } else if (accuracy < 100){
             return ChatColor.GREEN;
+        } else {
+            return ChatColor.GOLD;
         }
     }
 

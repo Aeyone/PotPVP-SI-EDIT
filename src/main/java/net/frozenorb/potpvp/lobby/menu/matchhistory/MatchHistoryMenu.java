@@ -89,12 +89,22 @@ public class MatchHistoryMenu extends PaginatedMenu {
             }
             List<String> matchList = matchHistoryHandler.getMatchList(target);
 
-            FindIterable<Document> result = collection.find(Filters.in("_id", matchList)).sort(Sorts.descending("startedAt"));
+            FindIterable<Document> result = collection.find(Filters.in("_id", matchList))
+                    .projection(new Document("_id", 1)
+                            .append("kitType", 1)
+                            .append("ranked", 1)
+                            .append("arena", 1)
+                            .append("startedAt", 1)
+                            .append("endedAt", 1)
+                            .append("winningPlayers", 1)
+                            .append("losingPlayers", 1))
+                    .sort(Sorts.descending("startedAt"));
 
             Map<Integer, Button> matchHistoryButtons = new HashMap<>();
+            Map<String, String> nameCache = new HashMap<>();
             int index = 0;
             for (Document doc : result) {
-                matchHistoryButtons.put(index++, new MatchHistoryButton(doc, target));
+                matchHistoryButtons.put(index++, new MatchHistoryButton(doc, target, nameCache));
             }
             Bukkit.getScheduler().runTask(PotPvPSI.getInstance(), () -> {
                 this.setButtons(matchHistoryButtons);

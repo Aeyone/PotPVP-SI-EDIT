@@ -45,7 +45,8 @@ public class MatchHistoryHandler implements Listener {
     }
 
     public void loadMatchList(UUID uuid) {
-        FindIterable<Document> result = COLLECTION.find(Filters.eq("allPlayers", uuid.toString())); // ascending order
+        FindIterable<Document> result = COLLECTION.find(Filters.eq("allPlayers", uuid.toString())) // ascending order
+            .projection(new Document("_id", 1));
         List<String> idList = new ArrayList<>();
         for (Document doc : result) {
             idList.add(doc.getString("_id"));
