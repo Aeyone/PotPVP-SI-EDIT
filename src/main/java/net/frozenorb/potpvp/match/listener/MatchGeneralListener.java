@@ -140,18 +140,15 @@ public final class MatchGeneralListener implements Listener {
             if (match.isSpectator(player.getUniqueId())) {
                 player.teleport(arena.getSpectatorSpawn());
             } else if (to.getBlockY() >= bounds.getUpperY() || to.getBlockY() <= bounds.getLowerY()) { // if left vertically
-
                 if ((match.getKitType().getId().equals("SUMO") || match.getKitType().getId().equals("SPLEEF"))) {
                     if (to.getBlockY() <= bounds.getLowerY() && bounds.getLowerY() - to.getBlockY() <= 20) return; // let the player fall 10 blocks
-                    match.markDead(player);
-                    match.addSpectator(player, null, true);
+                    eliminateOutOfBounds(match, player, to);
                 }
 
                 player.teleport(arena.getSpectatorSpawn());
             } else {
                 if (match.getKitType().getId().equals("SUMO") || match.getKitType().getId().equals("SPLEEF")) { // if they left horizontally
-                    match.markDead(player);
-                    match.addSpectator(player, null, true);
+                    eliminateOutOfBounds(match, player, to);
                     player.teleport(arena.getSpectatorSpawn());
                 }
 
@@ -159,11 +156,21 @@ public final class MatchGeneralListener implements Listener {
             }
         } else if (to.getBlockY() + 5 < arena.getSpectatorSpawn().getBlockY()) { // if the player is still in the arena bounds but fell down from the spawn point
             if (match.getKitType().getId().equals("SUMO")) {
-                match.markDead(player);
-                match.addSpectator(player, null, true);
+                eliminateOutOfBounds(match, player, to);
                 player.teleport(arena.getSpectatorSpawn());
             }
         }
+    }
+
+    private void eliminateOutOfBounds(Match match, Player player, Location location) {
+        MatchTeam team = match.getTeam(player.getUniqueId());
+        if (match.getState() != MatchState.IN_PROGRESS || team == null || !team.isAlive(player.getUniqueId())) {
+            return;
+        }
+
+        MatchDeathMessageListener.playDeathLightning(match, location);
+        match.markDead(player);
+        match.addSpectator(player, null, true);
     }
 
     /**

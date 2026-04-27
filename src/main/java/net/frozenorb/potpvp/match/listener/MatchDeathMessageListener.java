@@ -34,7 +34,6 @@ public final class MatchDeathMessageListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
         MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
         Match match = matchHandler.getMatchPlaying(event.getEntity());
 
@@ -44,11 +43,6 @@ public final class MatchDeathMessageListener implements Listener {
 
         Player killed = event.getEntity();
         Player killer = killed.getKiller();
-        PacketContainer lightningPacket = createLightningPacket(killed.getLocation());
-
-        float thunderSoundPitch = 0.8F + qLib.RANDOM.nextFloat() * 0.2F;
-        float explodeSoundPitch = 0.5F + qLib.RANDOM.nextFloat() * 0.2F;
-
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             UUID onlinePlayerUuid = onlinePlayer.getUniqueId();
 
@@ -76,16 +70,34 @@ public final class MatchDeathMessageListener implements Listener {
                PotPvPSI.getInstance().getFakeChatManager().getSession(onlinePlayer).triggerLOLSpam(20);
             }
 
-            if (settingHandler.getSetting(onlinePlayer, Setting.VIEW_OTHERS_LIGHTNING)) {
-                onlinePlayer.playSound(killed.getLocation(), Sound.AMBIENCE_THUNDER, 10000F, thunderSoundPitch);
-                onlinePlayer.playSound(killed.getLocation(), Sound.EXPLODE, 2.0F, explodeSoundPitch);
+        }
 
+        playDeathLightning(match, killed.getLocation());
+    }
+
+    public static void playDeathLightning(Match match, Location location) {
+        SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
+        PacketContainer lightningPacket = createLightningPacket(location);
+
+        float thunderSoundPitch = 0.8F + qLib.RANDOM.nextFloat() * 0.2F;
+        float explodeSoundPitch = 0.5F + qLib.RANDOM.nextFloat() * 0.2F;
+
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            UUID onlinePlayerUuid = onlinePlayer.getUniqueId();
+
+            if (match.getTeam(onlinePlayerUuid) == null && !match.isSpectator(onlinePlayerUuid)) {
+                continue;
+            }
+
+            if (settingHandler.getSetting(onlinePlayer, Setting.VIEW_OTHERS_LIGHTNING)) {
+                onlinePlayer.playSound(location, Sound.AMBIENCE_THUNDER, 10000F, thunderSoundPitch);
+                onlinePlayer.playSound(location, Sound.EXPLODE, 2.0F, explodeSoundPitch);
                 sendLightningPacket(onlinePlayer, lightningPacket);
             }
         }
     }
 
-    private PacketContainer createLightningPacket(Location location) {
+    private static PacketContainer createLightningPacket(Location location) {
         PacketContainer lightningPacket = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY_WEATHER);
 
         lightningPacket.getModifier().writeDefaults();
@@ -98,7 +110,7 @@ public final class MatchDeathMessageListener implements Listener {
         return lightningPacket;
     }
 
-    private void sendLightningPacket(Player target, PacketContainer packet) {
+    private static void sendLightningPacket(Player target, PacketContainer packet) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(target, packet);
         } catch (InvocationTargetException ignored) {

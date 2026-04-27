@@ -78,7 +78,7 @@ public final class RankedMatchQualificationListener implements Listener {
 
         Bukkit.getScheduler().runTaskAsynchronously(PotPvPSI.getInstance(), () -> {
             try (Jedis jedis = qLib.getInstance().getLocalJedisPool().getResource()) {
-                UUID winner = match.getWinner().getFirstAliveMember();
+                UUID winner = match.getWinner().getFirstMember();
                 rankedMatchQualificationWins.put(winner, jedis.incr(KEY_PREFIX + winner).intValue());
             }
         });
