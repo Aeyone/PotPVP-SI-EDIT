@@ -44,11 +44,7 @@ public final class BotCommand {
 
     @Command(names = {"bot add"}, permission = "op")
     public static void add(Player sender, @Param(name = "name") String name) {
-        if (plugin.getBotManager().addBot(name, sender)) {
-            sender.sendMessage(ChatColor.GREEN + "Successfully added " + ChatColor.AQUA + name + ChatColor.GREEN + " to active bots.");
-        } else {
-            sender.sendMessage(ChatColor.RED + name + " already exists.");
-        }
+        plugin.getBotMatchManager().prepareManualAdd(sender, name);
     }
 
     @Command(names = {"bot del"}, permission = "op")

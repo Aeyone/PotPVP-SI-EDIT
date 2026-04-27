@@ -1,7 +1,6 @@
 package net.frozenorb.potpvp.bot.listener;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.bot.BotManager;
 import net.frozenorb.potpvp.bot.BotMatchManager;
 import net.frozenorb.potpvp.bot.BotPendingData;
 import net.frozenorb.potpvp.kittype.KitType;
@@ -31,19 +30,11 @@ public class BotListener implements Listener {
         if (!PotPvPSI.getInstance().getBotManager().getList().contains(player.getName())) {
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(PotPvPSI.getInstance(), ()-> {
-            Skin.getSkinByName(player.getName()).thenAccept(skin -> {
-                    if (skin != null) {
-                        Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), () -> {
-                            if (player.isOnline()) {
-                                SkinUtils.setSkin(player, skin);
-                                SkinUtils.refreshAsPlayer(player);
-                            }
-                        }, 2 * 20L);
-                    }
-                }
-            );
-        });
+
+        Skin cached = Skin.getCachedSkin(player.getName());
+        if (cached != null) {
+            SkinUtils.setSkin(player, cached);
+        }
     }
 
     @EventHandler
@@ -60,12 +51,16 @@ public class BotListener implements Listener {
         Set<String> allArenas = botPendingData.allArenas;
 
         switch (botPendingData.pendingType) {
-            case "DUEL": {
-                duel(target, player, kitType, getRandomArenaSchematic(allArenas), allArenas.size() == 1 ? "EXACT" : "RANDOM");
+            case DUEL: {
+                if (allArenas == null || allArenas.isEmpty()) {
+                    duel(target, player, kitType);
+                } else {
+                    duel(target, player, kitType, getRandomArenaSchematic(allArenas), allArenas.size() == 1 ? "EXACT" : "RANDOM");
+                }
                 accept(player, target);
                 break;
             }
-            case  "QUEUE": {
+            case QUEUE: {
                 QueueHandler queueHandler = PotPvPSI.getInstance().getQueueHandler();
                 MatchQueueEntry targetEntry = queueHandler.getQueueEntry(target.getUniqueId());
                 if (targetEntry != null) {
