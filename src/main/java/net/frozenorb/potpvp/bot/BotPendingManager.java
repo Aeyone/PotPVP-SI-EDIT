@@ -2,14 +2,13 @@ package net.frozenorb.potpvp.bot;
 
 import lombok.Getter;
 import net.frozenorb.potpvp.PotPvPSI;
+import net.frozenorb.potpvp.bot.config.BotProfile;
 import net.frozenorb.potpvp.kittype.KitType;
 import net.frozenorb.potpvp.util.Skin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,59 +16,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class BotMatchManager {
-
-    public static List<String> NAME = new ArrayList<>(
-        Arrays.asList(
-            "DefeatBoy",
-            "idiol",
-            "GANGMEMBERHOW2",
-            "ZIBLACKINGGG",
-            "Zeynah",
-            "Glory",
-            "Verzide",
-            "BCZ",
-            "Marcel",
-            "Stimpay",
-            "Dreamer_420",
-            "Tryhard",
-            "Zefew",
-            "DANTEH",
-            "Zi_Min",
-            "Xetha",
-            "Jewdah",
-            "Airbus",
-            "Fearless_420",
-            "DrummerReviews",
-            "PotFast",
-            "clare",
-            "itsjhalt",
-            "Vious",
-            "Kevstah",
-            "Latenci",
-            "MeeZoid",
-            "DaGoldBrick",
-            "Apexay",
-            "Tylarzz",
-            "Topu",
-            "iSparkton",
-            "Reboting",
-            "ImHacking",
-            "Miami",
-            "Hydrize",
-            "Demolishing"
-        )
-    );
+public class BotPendingManager {
 
     @Getter private final Map<String, BotPendingData> pendingBot = new ConcurrentHashMap<>();
     private final Set<String> loadingBotNames = ConcurrentHashMap.newKeySet();
 
-    public BotMatchManager() {
+    public BotPendingManager() {
         Skin.loadCache();
     }
 
     public void prepareDuel(Player player, KitType kitType, Set<String> allArenas) {
         prepareBot(player, kitType, allArenas, BotPendingType.DUEL);
+    }
+
+    public void prepareDuel(Player player, String name, KitType kitType, Set<String> allArenas) {
+        prepareBot(player, name, kitType, allArenas, BotPendingType.DUEL);
     }
 
     public void prepareQueue(Player player, KitType kitType) {
@@ -81,7 +42,19 @@ public class BotMatchManager {
             return;
         }
 
-        String botName = name.trim();
+        String requestedName = name.trim();
+        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(requestedName);
+        if (profile == null) {
+            player.sendMessage(ChatColor.RED + requestedName + " is not exists.");
+            return;
+        }
+
+        String botName = profile.getId();
+        if (isNameReserved(botName)) {
+            player.sendMessage(ChatColor.RED + botName + " is already active or loading.");
+            return;
+        }
+
         if (Skin.getCachedSkin(botName) != null) {
             addManualBot(player, botName);
             return;
@@ -103,8 +76,10 @@ public class BotMatchManager {
                     player.sendMessage(ChatColor.YELLOW + "Failed to load skin for " + botName + ", adding bot without cached skin.");
                 }
 
-                if (player.isOnline()) {
+                if (player.isOnline() && !isNameActive(botName)) {
                     addManualBot(player, botName);
+                } else if (player.isOnline()) {
+                    player.sendMessage(ChatColor.RED + botName + " is already active.");
                 }
             } finally {
                 loadingBotNames.remove(botNameKey);
@@ -119,30 +94,46 @@ public class BotMatchManager {
 
         String name = randomAvailableName();
         if (name == null) {
+            player.sendMessage(ChatColor.RED + "No available bots found.");
             return;
         }
 
-        if (Skin.getCachedSkin(name) != null) {
-            startBot(name, player, kitType, allArenas, pendingType);
+        prepareBot(player, name, kitType, allArenas, pendingType);
+    }
+
+    private void prepareBot(Player player, String name, KitType kitType, Set<String> allArenas, BotPendingType pendingType) {
+        if (player == null || !player.isOnline() || name == null || name.trim().isEmpty()) {
             return;
         }
 
-        String key = nameKey(name);
+        String botName = name.trim();
+        if (isNameReserved(botName)) {
+            player.sendMessage(ChatColor.RED + botName + " is already active or loading.");
+            return;
+        }
+
+        if (Skin.getCachedSkin(botName) != null) {
+            startBot(botName, player, kitType, allArenas, pendingType);
+            return;
+        }
+
+        String key = nameKey(botName);
         if (!loadingBotNames.add(key)) {
+            player.sendMessage(ChatColor.RED + botName + " is already loading skin data.");
             return;
         }
 
-        Skin.getSkinByName(name).whenComplete((skin, throwable) -> Bukkit.getScheduler().runTask(PotPvPSI.getInstance(), () -> {
+        Skin.getSkinByName(botName).whenComplete((skin, throwable) -> Bukkit.getScheduler().runTask(PotPvPSI.getInstance(), () -> {
             try {
                 if (throwable != null) {
                     throwable.printStackTrace();
-                    Bukkit.getLogger().warning("Failed to load skin for bot " + name + ", spawning without cached skin.");
+                    Bukkit.getLogger().warning("Failed to load skin for bot " + botName + ", spawning without cached skin.");
                 } else if (skin == null || !skin.isComplete()) {
-                    Bukkit.getLogger().warning("Failed to load skin for bot " + name + ".");
+                    Bukkit.getLogger().warning("Failed to load skin for bot " + botName + ".");
                 }
 
-                if (player.isOnline() && !isNameActive(name)) {
-                    startBot(name, player, kitType, allArenas, pendingType);
+                if (player.isOnline() && !isNameActive(botName)) {
+                    startBot(botName, player, kitType, allArenas, pendingType);
                 }
             } finally {
                 loadingBotNames.remove(key);
@@ -170,19 +161,21 @@ public class BotMatchManager {
     }
 
     private String randomAvailableName() {
-        if (NAME.isEmpty()) {
+        List<String> names = PotPvPSI.getInstance().getBotConfig().getBotIds();
+
+        if (names.isEmpty()) {
             return null;
         }
 
-        int maxAttempts = NAME.size() * 2;
+        int maxAttempts = names.size() * 2;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            String name = NAME.get(ThreadLocalRandom.current().nextInt(NAME.size()));
+            String name = names.get(ThreadLocalRandom.current().nextInt(names.size()));
             if (!isNameReserved(name)) {
                 return name;
             }
         }
 
-        for (String name : NAME) {
+        for (String name : names) {
             if (!isNameReserved(name)) {
                 return name;
             }
@@ -191,7 +184,7 @@ public class BotMatchManager {
         return null;
     }
 
-    private boolean isNameReserved(String name) {
+    public boolean isNameReserved(String name) {
         return loadingBotNames.contains(nameKey(name)) || isNameActive(name);
     }
 

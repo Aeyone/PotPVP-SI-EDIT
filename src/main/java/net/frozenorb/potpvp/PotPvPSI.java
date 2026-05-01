@@ -10,8 +10,9 @@ import com.qrakn.morpheus.game.GameQueue;
 import com.qrakn.morpheus.game.event.GameEvent;
 import mkremins.fanciful.FancyMessage;
 // import net.frozenorb.hydrogen.Settings;
+import net.frozenorb.potpvp.bot.config.BotConfig;
 import net.frozenorb.potpvp.bot.BotManager;
-import net.frozenorb.potpvp.bot.BotMatchManager;
+import net.frozenorb.potpvp.bot.BotPendingManager;
 import net.frozenorb.potpvp.bot.RedisManager;
 import net.frozenorb.potpvp.bot.listener.BotListener;
 import net.frozenorb.potpvp.lobby.menu.matchhistory.MatchHistoryHandler;
@@ -122,7 +123,8 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private FakeChatManager fakeChatManager;
     @Getter private BotManager botManager;
     @Getter private RedisManager redisManager;
-    @Getter private BotMatchManager botMatchManager;
+    @Getter private BotPendingManager botPendingManager;
+    @Getter private BotConfig botConfig;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
     private static String CHANNEL = "bot-chat";
@@ -180,8 +182,9 @@ public final class PotPvPSI extends JavaPlugin {
         statisticsHandler = new StatisticsHandler();
         matchHistoryHandler = new MatchHistoryHandler();
         fakeChatManager = new FakeChatManager(this);
+        botConfig = BotConfig.load();
         botManager = new BotManager();
-        botMatchManager = new BotMatchManager();
+        botPendingManager = new BotPendingManager();
 
         new Morpheus(this); // qrakn game events
         new EventTask().runTaskTimerAsynchronously(this, 1L, 1L);

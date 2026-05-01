@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import net.frozenorb.potpvp.arena.menu.manageschematics.ManageSchematicsMenu;
+import net.frozenorb.potpvp.bot.menu.BotConfigMenu;
 import net.frozenorb.potpvp.kittype.menu.manage.ManageKitTypeMenu;
 import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
 import net.frozenorb.qlib.command.Command;
@@ -34,8 +35,9 @@ public final class ManageCommand {
         @Override
         public Map<Integer, Button> getButtons(Player player) {
             return ImmutableMap.of(
-                3, new ManageKitButton(),
-                5, new ManageArenaButton()
+                2, new ManageKitButton(),
+                4, new ManageArenaButton(),
+                6, new ManageBotButton()
             );
         }
 
@@ -61,6 +63,7 @@ public final class ManageCommand {
         @Override
         public void clicked(Player player, int slot, ClickType clickType) {
             player.closeInventory();
+            Button.playNeutral(player);
 
             new SelectKitTypeMenu((kitType) -> {
                 player.closeInventory();
@@ -90,7 +93,36 @@ public final class ManageCommand {
         @Override
         public void clicked(Player player, int slot, ClickType clickType) {
             player.closeInventory();
+            Button.playNeutral(player);
+
             new ManageSchematicsMenu().openMenu(player);
+        }
+
+    }
+
+    private static class ManageBotButton extends Button {
+
+        @Override
+        public String getName(Player player) {
+            return ChatColor.YELLOW + "Manage bot config";
+        }
+
+        @Override
+        public List<String> getDescription(Player player) {
+            return ImmutableList.of();
+        }
+
+        @Override
+        public Material getMaterial(Player player) {
+            return Material.GOLD_SWORD;
+        }
+
+        @Override
+        public void clicked(Player player, int slot, ClickType clickType) {
+            player.closeInventory();
+            Button.playNeutral(player);
+
+            new BotConfigMenu().openMenu(player);
         }
 
     }

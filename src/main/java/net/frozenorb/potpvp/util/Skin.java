@@ -1,19 +1,22 @@
 package net.frozenorb.potpvp.util;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import lombok.Getter;
 import lombok.Setter;
 import net.frozenorb.potpvp.PotPvPSI;
-import net.minecraft.util.com.google.gson.JsonElement;
-import net.minecraft.util.com.google.gson.JsonObject;
-import net.minecraft.util.com.google.gson.JsonParser;
+import org.bukkit.craftbukkit.libs.com.google.gson.JsonElement;
+import org.bukkit.craftbukkit.libs.com.google.gson.JsonObject;
+import org.bukkit.craftbukkit.libs.com.google.gson.JsonParser;
+import org.bukkit.craftbukkit.libs.com.google.gson.reflect.TypeToken;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +32,7 @@ public class Skin {
    public static final Map<String, Skin> SKINS = new ConcurrentHashMap<>();
    public static Skin DEFAULT_SKIN = new Skin("", "", "");
    private static final Object CACHE_LOCK = new Object();
+   private static final Type SKIN_CACHE_TYPE = new TypeToken<Map<String, Skin>>() {}.getType();
    private static final Map<String, CompletableFuture<Skin>> PENDING_SKIN_LOADS = new ConcurrentHashMap<>();
    private static final ExecutorService SKIN_LOAD_EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
       Thread thread = new Thread(runnable, "PotPvP-SkinLoader");
@@ -125,24 +129,21 @@ public class Skin {
             return;
          }
 
-         try (InputStreamReader reader = new InputStreamReader(new FileInputStream(cacheFile), StandardCharsets.UTF_8)) {
-            JsonElement element = new JsonParser().parse(reader);
-            if (element == null || !element.isJsonObject()) {
-               cacheLoaded = true;
+         try (Reader reader = Files.newReader(cacheFile, Charsets.UTF_8)) {
+            Map<String, Skin> loadedSkins = PotPvPSI.getGson().fromJson(reader, SKIN_CACHE_TYPE);
+            if (loadedSkins == null) {
                return;
             }
 
-            for (Map.Entry<String, JsonElement> entry : element.getAsJsonObject().entrySet()) {
-               if (!entry.getValue().isJsonObject()) {
+            for (Map.Entry<String, Skin> entry : loadedSkins.entrySet()) {
+               Skin skin = entry.getValue();
+               if (skin == null) {
                   continue;
                }
 
-               JsonObject object = entry.getValue().getAsJsonObject();
-               Skin skin = new Skin(
-                  getString(object, "name", entry.getKey()),
-                  getString(object, "value", ""),
-                  getString(object, "signature", "")
-               );
+               if (skin.getName() == null || skin.getName().isEmpty()) {
+                  skin.setName(entry.getKey());
+               }
 
                if (skin.isComplete()) {
                   SKINS.put(cacheKey(skin.getName()), skin);
@@ -168,21 +169,21 @@ public class Skin {
             parent.mkdirs();
          }
 
-         JsonObject root = new JsonObject();
+         Map<String, Skin> cacheSnapshot = new LinkedHashMap<>();
          for (Skin skin : SKINS.values()) {
             if (!skin.isComplete()) {
                continue;
             }
 
-            JsonObject object = new JsonObject();
-            object.addProperty("name", skin.getName());
-            object.addProperty("value", skin.getValue());
-            object.addProperty("signature", skin.getSignature());
-            root.add(cacheKey(skin.getName()), object);
+            cacheSnapshot.put(cacheKey(skin.getName()), skin);
          }
 
-         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(cacheFile), StandardCharsets.UTF_8)) {
-            writer.write(root.toString());
+         try {
+            Files.write(
+               PotPvPSI.getGson().toJson(cacheSnapshot, SKIN_CACHE_TYPE),
+               cacheFile,
+               Charsets.UTF_8
+            );
          } catch (Exception ex) {
             ex.printStackTrace();
          }
@@ -194,12 +195,12 @@ public class Skin {
       return plugin == null ? null : new File(plugin.getDataFolder(), CACHE_FILE_NAME);
    }
 
-   private static String getString(JsonObject object, String key, String fallback) {
-      return object.has(key) && !object.get(key).isJsonNull() ? object.get(key).getAsString() : fallback;
-   }
-
    private static String cacheKey(String name) {
       return name == null ? "" : name.toLowerCase(Locale.ROOT);
+   }
+
+   public Skin() {
+      this("", "", "");
    }
 
    public Skin(String name, String value, String signature) {

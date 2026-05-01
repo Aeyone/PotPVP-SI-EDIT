@@ -226,6 +226,7 @@ public final class Match {
         // then we update vis, otherwise the update code will see 'partial' views of the
         // match
         updateVisiblity.forEach(VisibilityUtils::updateVisibilityFlicker);
+        sendFriendlyUuidsToBots();
         
         Bukkit.getPluginManager().callEvent(new MatchCountdownStartEvent(this));
         
@@ -260,6 +261,20 @@ public final class Match {
         
         messageAll(ChatColor.GREEN + "Match started.");
         Bukkit.getPluginManager().callEvent(new MatchStartEvent(this));
+    }
+
+    private void sendFriendlyUuidsToBots() {
+        BotManager botManager = PotPvPSI.getInstance().getBotManager();
+
+        for (MatchTeam team : teams) {
+            for (UUID playerUuid : team.getAliveMembers()) {
+                Player player = Bukkit.getPlayer(playerUuid);
+
+                if (player != null && botManager.getList().contains(player.getName())) {
+                    botManager.applyFriendlyUuids(player, team.getAllMembers());
+                }
+            }
+        }
     }
     
     public void endMatch(MatchEndReason reason) {

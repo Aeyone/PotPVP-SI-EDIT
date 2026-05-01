@@ -1,7 +1,7 @@
 package net.frozenorb.potpvp.bot.listener;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.bot.BotMatchManager;
+import net.frozenorb.potpvp.bot.BotPendingManager;
 import net.frozenorb.potpvp.bot.BotPendingData;
 import net.frozenorb.potpvp.kittype.KitType;
 import net.frozenorb.potpvp.queue.MatchQueue;
@@ -40,8 +40,8 @@ public class BotListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        BotMatchManager botMatchManager = PotPvPSI.getInstance().getBotMatchManager();
-        BotPendingData botPendingData = botMatchManager.getPendingBot().get(player.getName());
+        BotPendingManager botPendingManager = PotPvPSI.getInstance().getBotPendingManager();
+        BotPendingData botPendingData = botPendingManager.getPendingBot().get(player.getName());
         if (botPendingData == null) {
             return;
         }
@@ -71,7 +71,7 @@ public class BotListener implements Listener {
             }
             default:{}
         }
-        botMatchManager.getPendingBot().remove(player.getName());
+        botPendingManager.getPendingBot().remove(player.getName());
 
         Bukkit.getScheduler().runTaskLater( PotPvPSI.getInstance(), ()-> {
             if (!PotPvPSI.getInstance().getMatchHandler().isPlayingMatch(player)) {

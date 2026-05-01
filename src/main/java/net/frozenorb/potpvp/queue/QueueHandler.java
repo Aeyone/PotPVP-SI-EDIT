@@ -5,7 +5,6 @@ import com.google.common.collect.Table;
 
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.kittype.KitType;
-import net.frozenorb.potpvp.lobby.LobbyItems;
 import net.frozenorb.potpvp.party.Party;
 import net.frozenorb.potpvp.queue.listener.QueueGeneralListener;
 import net.frozenorb.potpvp.queue.listener.QueueItemListener;
@@ -104,7 +103,7 @@ public final class QueueHandler {
             long delayTicks = 20L * ThreadLocalRandom.current().nextInt(1 , 8);
             Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), () -> {
                 if (isQueued(player.getUniqueId())) {
-                    PotPvPSI.getInstance().getBotMatchManager().prepareQueue(Bukkit.getPlayer(entry.getMembers().iterator().next()), kitType);
+                    PotPvPSI.getInstance().getBotPendingManager().prepareQueue(Bukkit.getPlayer(entry.getMembers().iterator().next()), kitType);
                 }
             }, delayTicks);
         }

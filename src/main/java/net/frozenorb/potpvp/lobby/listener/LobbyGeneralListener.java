@@ -1,7 +1,6 @@
 package net.frozenorb.potpvp.lobby.listener;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -48,7 +47,7 @@ public final class LobbyGeneralListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (PotPvPSI.getInstance().getBotMatchManager().getPendingBot().get(player.getName()) == null) {
+        if (PotPvPSI.getInstance().getBotPendingManager().getPendingBot().get(player.getName()) == null) {
             lobbyHandler.returnToLobby(player);
         }
     }

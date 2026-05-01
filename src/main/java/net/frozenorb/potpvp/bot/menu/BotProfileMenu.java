@@ -1,47 +1,50 @@
 package net.frozenorb.potpvp.bot.menu;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.bot.config.BotConfig;
-import net.frozenorb.potpvp.command.ManageCommand;
+import net.frozenorb.potpvp.bot.config.BotProfile;
+import net.frozenorb.potpvp.bot.config.ParameterRange;
 import net.frozenorb.potpvp.util.menu.MenuBackButton;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.pagination.PaginatedMenu;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class BotConfigMenu extends PaginatedMenu {
+public class BotProfileMenu extends PaginatedMenu {
 
-    public BotConfigMenu() {
+    private final String botId;
+
+    public BotProfileMenu(String botId) {
+        this.botId = botId;
         setPlaceholder(true);
     }
 
     @Override
     public String getPrePaginatedTitle(Player player) {
-        return "Bot Manager";
+        return botId;
     }
 
     @Override
     public Map<Integer, Button> getGlobalButtons(Player player) {
         Map<Integer, Button> buttons = new HashMap<>();
-        buttons.put(4, new MenuBackButton(p -> new ManageCommand.ManageMenu().openMenu(p)));
-        buttons.put(6, new AddBotButton());
+        buttons.put(4, new MenuBackButton(p -> new BotConfigMenu().openMenu(p)));
+        buttons.put(6, new DeleteBotButton(botId));
         return buttons;
     }
 
     @Override
     public Map<Integer, Button> getAllPagesButtons(Player player) {
-        BotConfig config = PotPvPSI.getInstance().getBotConfig();
+        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botId);
         Map<Integer, Button> buttons = new HashMap<>();
-        List<String> botIds = config.getBotIds();
         int index = 0;
 
-        Collections.sort(botIds, String.CASE_INSENSITIVE_ORDER);
-        for (String botId : botIds) {
-            buttons.put(index++, new BotButton(botId));
+        if (profile == null) {
+            return buttons;
+        }
+
+        for (Map.Entry<String, ParameterRange> entry : profile.getParameters().entrySet()) {
+            buttons.put(index++, new BotParameterButton(profile.getId(), entry.getKey()));
         }
 
         return buttons;

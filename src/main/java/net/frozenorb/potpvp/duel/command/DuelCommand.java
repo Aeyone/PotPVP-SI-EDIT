@@ -26,6 +26,7 @@ import net.frozenorb.potpvp.setting.SettingHandler;
 
 import net.frozenorb.qlib.command.Command;
 import net.frozenorb.qlib.command.Param;
+import net.frozenorb.qlib.command.Type;
 import net.frozenorb.qlib.qLib;
 import net.frozenorb.qlib.util.UUIDUtils;
 
@@ -47,7 +48,7 @@ import java.util.function.Consumer;
 public final class DuelCommand {
 
     @Command(names = {"duel", "1v1"}, permission = "")
-    public static void duel(Player sender, @Param(name = "player") Player target) {
+    public static void duel(Player sender, @Type(DuelTargetParameterType.class) @Param(name = "player", defaultValue = DuelTargetParameterType.BOT_MENU_SENTINEL) Player target) {
         if (sender == target) {
             sender.sendMessage(ChatColor.RED + "You can't duel yourself!");
             return;

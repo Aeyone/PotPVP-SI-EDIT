@@ -1,33 +1,14 @@
 package net.frozenorb.potpvp.bot.command;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.kittype.menu.select.SelectKitTypeMenu;
-import net.frozenorb.potpvp.setting.Setting;
 import net.frozenorb.qlib.command.Command;
 import net.frozenorb.qlib.command.Param;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import static net.frozenorb.potpvp.duel.command.DuelCommand.getArenas;
-
 public final class BotCommand {
     private static final PotPvPSI plugin = PotPvPSI.getInstance();
-
-    @Command(names = {"bot duel"}, permission = "")
-    public static void duelBot(Player sender){
-        new SelectKitTypeMenu(
-            kitType -> {
-                sender.closeInventory();
-                if (PotPvPSI.getInstance().getSettingHandler().getSetting(sender, Setting.SELECT_MAP)) {
-                    getArenas(sender, kitType, allArenas -> PotPvPSI.getInstance().getBotMatchManager().prepareDuel(sender, kitType, allArenas) );
-                } else {
-                    PotPvPSI.getInstance().getBotMatchManager().prepareDuel(sender, kitType, null);
-                }
-            },
-            "Select a kit type..."
-        ).openMenu(sender);
-    }
 
     @Command(names = {"bot list"}, permission = "op")
     public static void list(Player sender) {
@@ -44,7 +25,7 @@ public final class BotCommand {
 
     @Command(names = {"bot add"}, permission = "op")
     public static void add(Player sender, @Param(name = "name") String name) {
-        plugin.getBotMatchManager().prepareManualAdd(sender, name);
+        plugin.getBotPendingManager().prepareManualAdd(sender, name);
     }
 
     @Command(names = {"bot del"}, permission = "op")
