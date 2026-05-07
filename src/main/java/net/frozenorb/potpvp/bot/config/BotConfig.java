@@ -4,21 +4,23 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import net.frozenorb.potpvp.PotPvPSI;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.libs.com.google.gson.reflect.TypeToken;
+import org.bukkit.craftbukkit.libs.com.google.gson.JsonElement;
+import org.bukkit.craftbukkit.libs.com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class BotConfig {
 
     private static final String CONFIG_FILE_NAME = "botConfig.json";
-    private static final Type BOT_PROFILES_TYPE = new TypeToken<LinkedHashMap<String, BotProfile>>() {}.getType();
+    private static final String EXTRA_PROFILES_KEY = "extraProfiles";
     private static final List<String> DEFAULT_BOT_NAMES = Arrays.asList(
         "DefeatBoy",
         "idiol",
@@ -59,45 +61,58 @@ public final class BotConfig {
         "Demolishing"
     );
     private static final List<ParameterDefinition> DEFAULT_PARAMETERS = Arrays.asList(
-        new ParameterDefinition("horizontalAimSpeed", "Horizontal Aim Speed", 0.4D, 0.6D, false),
-        new ParameterDefinition("verticalAimSpeed", "Vertical Aim Speed", 0.4D, 0.6D, false),
-        new ParameterDefinition("horizontalAimAccuracy", "Horizontal Aim Accuracy", 0.4D, 0.6D, false),
-        new ParameterDefinition("verticalAimAccuracy", "Vertical Aim Accuracy", 0.4D, 0.6D, false),
-        new ParameterDefinition("horizontalErraticness", "Horizontal Erraticness", 0.2D, 0.4D, false),
-        new ParameterDefinition("verticalErraticness", "Vertical Erraticness", 0.2D, 0.4D, false),
-        new ParameterDefinition("averageCps", "Average CPS", 6.0D, 10.0D, false),
-        new ParameterDefinition("sprintResetAccuracy", "Sprint Reset Accuracy", 0.4D, 0.6D, false),
+        new ParameterDefinition("aimSpeed", "Aim Speed", 0.0D, 0.2D, false, "horizontalAimSpeed", "verticalAimSpeed"),
+        new ParameterDefinition("aimAccuracy", "Aim Accuracy", 0.0D, 0.2D, false, "horizontalAimAccuracy", "verticalAimAccuracy"),
+        new ParameterDefinition("erraticness", "Erraticness", 0.01D, 0.05D, false, "horizontalErraticness", "verticalErraticness"),
+        new ParameterDefinition("averageCps", "Average CPS", 6.0D, 8.0D, false),
+        new ParameterDefinition("sprintResetAccuracy", "Sprint Reset Accuracy", 0.0D, 0.2D, false),
         new ParameterDefinition("hitSelectAccuracy", "Hit Select Accuracy(No Effect)", 0.0D, 0.0D, false),
         new ParameterDefinition("reach", "Reach", 2.5D, 3.0D, false),
-        new ParameterDefinition("jumpProbability", "Jump Probability", 0.05D, 0.2D, false),
-        new ParameterDefinition("wtapProbability", "W-Tap Probability", 0.4D, 1.0D, false),
-        new ParameterDefinition("latency", "Latency", 20D, 20D, true),
+        new ParameterDefinition("jumpProbability", "Jump Probability", 0.00D, 0.05D, false),
+        new ParameterDefinition("wtapProbability", "W-Tap Probability", 0.0D, 0.2D, false),
+        new ParameterDefinition("latency", "Latency", 10D, 20D, true),
         new ParameterDefinition("targetSearchRange", "Target Search Range", 256D, 256D, true),
         new ParameterDefinition("pearlCooldown", "Pearl Cooldown", 24D, 24D, true)
     );
+    private static final ParameterDefinition MAX_REACH_EXTRA_PARAMETER = new ParameterDefinition("maxReach", "Max Reach", 0D, 0D, false);
 
     private final Map<String, BotProfile> profiles = new LinkedHashMap<>();
+    private final Map<String, Map<String, Double>> extraProfiles = new LinkedHashMap<>();
 
-    private BotConfig(Map<String, BotProfile> profiles) {
+    private BotConfig(Map<String, BotProfile> profiles, Map<String, Map<String, Double>> extraProfiles) {
         if (profiles != null) {
             this.profiles.putAll(profiles);
+        }
+        if (extraProfiles != null) {
+            this.extraProfiles.putAll(extraProfiles);
         }
         ensureDefaults();
     }
 
     public static BotConfig load() {
         File file = getConfigFile();
-        Map<String, BotProfile> profiles = null;
+        Map<String, BotProfile> profiles = new LinkedHashMap<>();
+        Map<String, Map<String, Double>> extraProfiles = new LinkedHashMap<>();
 
         if (file.exists()) {
             try (Reader reader = Files.newReader(file, Charsets.UTF_8)) {
-                profiles = PotPvPSI.getGson().fromJson(reader, BOT_PROFILES_TYPE);
+                JsonObject root = PotPvPSI.getGson().fromJson(reader, JsonObject.class);
+
+                if (root != null) {
+                    for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                        if (entry.getKey().equalsIgnoreCase(EXTRA_PROFILES_KEY)) {
+                            loadExtraProfiles(entry.getValue(), extraProfiles);
+                        } else {
+                            profiles.put(entry.getKey(), PotPvPSI.getGson().fromJson(entry.getValue(), BotProfile.class));
+                        }
+                    }
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
 
-        BotConfig config = new BotConfig(profiles);
+        BotConfig config = new BotConfig(profiles, extraProfiles);
         config.save();
         return config;
     }
@@ -111,51 +126,176 @@ public final class BotConfig {
         }
 
         try {
-            Files.write(PotPvPSI.getGson().toJson(profiles, BOT_PROFILES_TYPE), file, Charsets.UTF_8);
+            JsonObject root = new JsonObject();
+
+            for (Map.Entry<String, BotProfile> entry : profiles.entrySet()) {
+                root.add(entry.getKey(), PotPvPSI.getGson().toJsonTree(entry.getValue()));
+            }
+
+            JsonObject extraProfilesJson = new JsonObject();
+            for (Map.Entry<String, Map<String, Double>> entry : extraProfiles.entrySet()) {
+                extraProfilesJson.add(entry.getKey(), PotPvPSI.getGson().toJsonTree(entry.getValue()));
+            }
+            root.add(EXTRA_PROFILES_KEY, extraProfilesJson);
+
+            Files.write(PotPvPSI.getGson().toJson(root), file, Charsets.UTF_8);
         } catch (Exception ex) {
             Bukkit.getLogger().warning("[BotConfig] Failed to save bot config.");
             ex.printStackTrace();
         }
     }
 
-    public List<String> getBotIds() {
+    public List<String> getBotNames() {
         ensureDefaults();
         return new ArrayList<>(profiles.keySet());
     }
 
-    public BotProfile getBot(String id) {
+    public BotProfile getBot(String name) {
         ensureDefaults();
-        String storedId = getStoredId(id);
-        return storedId == null ? null : profiles.get(storedId);
+        String storedName = getStoredBotName(name);
+        return storedName == null ? null : profiles.get(storedName);
     }
 
-    public boolean addBot(String id) {
+    public boolean addBot(String name) {
         ensureDefaults();
 
-        String normalizedId = normalizeBotId(id);
-        if (normalizedId == null || getStoredId(normalizedId) != null) {
+        String normalizedName = normalizeBotName(name);
+        if (normalizedName == null || normalizedName.equalsIgnoreCase(EXTRA_PROFILES_KEY) || getStoredBotName(normalizedName) != null) {
             return false;
         }
 
-        profiles.put(normalizedId, BotProfile.createDefault(normalizedId));
+        profiles.put(normalizedName, BotProfile.createDefault(normalizedName));
         save();
         return true;
     }
 
-    public boolean removeBot(String id) {
+    public boolean removeBot(String name) {
         ensureDefaults();
 
-        String storedId = getStoredId(id);
-        if (storedId == null) {
+        String storedName = getStoredBotName(name);
+        if (storedName == null) {
             return false;
         }
 
-        profiles.remove(storedId);
+        profiles.remove(storedName);
         save();
         return true;
+    }
+
+    public List<String> getExtraProfileNames() {
+        ensureDefaults();
+        return new ArrayList<>(extraProfiles.keySet());
+    }
+
+    public Map<String, Double> getExtraProfile(String name) {
+        ensureDefaults();
+        String storedName = getStoredExtraProfileName(name);
+        return storedName == null ? null : extraProfiles.get(storedName);
+    }
+
+    public boolean addExtraProfile(String name) {
+        ensureDefaults();
+
+        String normalizedName = normalizeName(name);
+        if (normalizedName == null || getStoredExtraProfileName(normalizedName) != null) {
+            return false;
+        }
+
+        extraProfiles.put(normalizedName, createExtraProfileValues(null));
+        save();
+        return true;
+    }
+
+    public boolean removeExtraProfile(String name) {
+        ensureDefaults();
+
+        String storedName = getStoredExtraProfileName(name);
+        if (storedName == null) {
+            return false;
+        }
+
+        extraProfiles.remove(storedName);
+        for (BotProfile profile : profiles.values()) {
+            profile.setExtraProfileEnabled(storedName, false);
+        }
+
+        save();
+        return true;
+    }
+
+    public boolean setExtraProfileValue(String extraProfileName, String parameterId, double value) {
+        ensureDefaults();
+
+        String storedName = getStoredExtraProfileName(extraProfileName);
+        ParameterDefinition definition = getAnyParameterDefinition(parameterId);
+        if (storedName == null || definition == null) {
+            return false;
+        }
+
+        extraProfiles.get(storedName).put(definition.id, normalizeExtraValue(definition, value));
+        save();
+        return true;
+    }
+
+    public boolean isExtraProfileEnabled(String botName, String extraProfileName) {
+        BotProfile profile = getBot(botName);
+        String storedExtraProfileName = getStoredExtraProfileName(extraProfileName);
+        return profile != null && storedExtraProfileName != null && profile.isExtraProfileEnabled(storedExtraProfileName);
+    }
+
+    public boolean setExtraProfileEnabled(String botName, String extraProfileName, boolean enabled) {
+        BotProfile profile = getBot(botName);
+        String storedExtraProfileName = getStoredExtraProfileName(extraProfileName);
+        if (profile == null || storedExtraProfileName == null) {
+            return false;
+        }
+
+        profile.setExtraProfileEnabled(storedExtraProfileName, enabled);
+        save();
+        return true;
+    }
+
+    public List<String> getParameterIds() {
+        List<String> ids = new ArrayList<>();
+        for (ParameterDefinition definition : DEFAULT_PARAMETERS) {
+            ids.add(definition.id);
+        }
+        return ids;
+    }
+
+    public List<String> getExtraProfileParameterIds() {
+        List<String> ids = new ArrayList<>();
+        for (ParameterDefinition definition : DEFAULT_PARAMETERS) {
+            ids.add(definition.id);
+            if (definition.id.equals("reach")) {
+                ids.add(MAX_REACH_EXTRA_PARAMETER.id);
+            }
+        }
+        return ids;
+    }
+
+    public String getParameterShowName(String parameterId) {
+        ParameterDefinition definition = getAnyParameterDefinition(parameterId);
+        return definition == null ? parameterId : definition.showName;
+    }
+
+    public boolean isIntegerParameter(String parameterId) {
+        ParameterDefinition definition = getAnyParameterDefinition(parameterId);
+        return definition != null && definition.integer;
+    }
+
+    public Map<String, Object> createRandomSettings(String botName) {
+        BotProfile profile = getBot(botName);
+        if (profile == null) {
+            return new LinkedHashMap<>();
+        }
+
+        return profile.createRandomSettings(selectExtraProfile(profile));
     }
 
     private void ensureDefaults() {
+        normalizeExtraProfiles();
+
         if (profiles.isEmpty()) {
             for (String defaultName : DEFAULT_BOT_NAMES) {
                 profiles.put(defaultName, BotProfile.createDefault(defaultName));
@@ -166,36 +306,55 @@ public final class BotConfig {
         profiles.clear();
 
         for (Map.Entry<String, BotProfile> entry : loadedProfiles.entrySet()) {
-            String id = normalizeBotId(entry.getKey());
+            String botName = normalizeBotName(entry.getKey());
             BotProfile profile = entry.getValue();
 
-            if (id == null || getStoredId(id) != null) {
+            if (botName == null || getStoredBotName(botName) != null) {
                 continue;
             }
 
             if (profile == null) {
-                profile = BotProfile.createDefault(id);
+                profile = BotProfile.createDefault(botName);
             } else {
-                profile.ensureDefaults(id);
+                profile.ensureDefaults(botName, extraProfiles.keySet());
             }
 
-            profiles.put(id, profile);
+            profiles.put(botName, profile);
         }
     }
 
-    private String getStoredId(String id) {
-        String normalizedId = normalizeBotId(id);
-        if (normalizedId == null) {
+    private String getStoredBotName(String name) {
+        String normalizedName = normalizeBotName(name);
+        if (normalizedName == null) {
             return null;
         }
 
-        if (profiles.containsKey(normalizedId)) {
-            return normalizedId;
+        if (profiles.containsKey(normalizedName)) {
+            return normalizedName;
         }
 
-        for (String existingId : profiles.keySet()) {
-            if (existingId.equalsIgnoreCase(normalizedId)) {
-                return existingId;
+        for (String existingName : profiles.keySet()) {
+            if (existingName.equalsIgnoreCase(normalizedName)) {
+                return existingName;
+            }
+        }
+
+        return null;
+    }
+
+    private String getStoredExtraProfileName(String name) {
+        String normalizedName = normalizeName(name);
+        if (normalizedName == null) {
+            return null;
+        }
+
+        if (extraProfiles.containsKey(normalizedName)) {
+            return normalizedName;
+        }
+
+        for (String existingName : extraProfiles.keySet()) {
+            if (existingName.equalsIgnoreCase(normalizedName)) {
+                return existingName;
             }
         }
 
@@ -208,6 +367,10 @@ public final class BotConfig {
 
         for (ParameterDefinition definition : DEFAULT_PARAMETERS) {
             ParameterRange range = source.get(definition.id);
+            if (range == null) {
+                range = getLegacyRange(source, definition);
+            }
+
             if (range == null) {
                 range = new ParameterRange(definition.showName, definition.min, definition.max, definition.integer);
             } else {
@@ -222,12 +385,160 @@ public final class BotConfig {
         return normalizedParameters;
     }
 
-    static String normalizeBotId(String id) {
-        if (id == null) {
+    static String[] getOutputParameterIds(String parameterId) {
+        ParameterDefinition definition = getParameterDefinition(parameterId);
+        return definition == null ? new String[] { parameterId } : definition.outputIds;
+    }
+
+    static double applyExtraProfileLimits(String parameterId, double value, Map<String, Double> extraProfile) {
+        if (extraProfile == null || !parameterId.equals("reach")) {
+            return value;
+        }
+
+        Double maxReach = extraProfile.get(MAX_REACH_EXTRA_PARAMETER.id);
+        return maxReach != null && maxReach > 0D && value > maxReach ? maxReach : value;
+    }
+
+    private Map<String, Double> selectExtraProfile(BotProfile profile) {
+        List<String> enabledProfiles = new ArrayList<>();
+        for (String extraProfileName : profile.getEnabledExtraProfiles()) {
+            if (extraProfiles.containsKey(extraProfileName)) {
+                enabledProfiles.add(extraProfileName);
+            }
+        }
+
+        if (enabledProfiles.isEmpty()) {
             return null;
         }
-        String normalizedId = id.trim();
-        return normalizedId.isEmpty() ? null : normalizedId;
+
+        return extraProfiles.get(enabledProfiles.get(ThreadLocalRandom.current().nextInt(enabledProfiles.size())));
+    }
+
+    private void normalizeExtraProfiles() {
+        Map<String, Map<String, Double>> loadedExtraProfiles = new LinkedHashMap<>(extraProfiles);
+        extraProfiles.clear();
+
+        for (Map.Entry<String, Map<String, Double>> entry : loadedExtraProfiles.entrySet()) {
+            String profileName = normalizeName(entry.getKey());
+            if (profileName == null || getStoredExtraProfileName(profileName) != null) {
+                continue;
+            }
+
+            extraProfiles.put(profileName, createExtraProfileValues(entry.getValue()));
+        }
+    }
+
+    private static Map<String, Double> createExtraProfileValues(Map<String, Double> loadedValues) {
+        Map<String, Double> values = new LinkedHashMap<>();
+        Map<String, Double> source = loadedValues == null ? new LinkedHashMap<>() : loadedValues;
+
+        for (ParameterDefinition definition : DEFAULT_PARAMETERS) {
+            Double value = getConfiguredValue(source, definition);
+            values.put(definition.id, value == null ? 0D : normalizeExtraValue(definition, value));
+            if (definition.id.equals("reach")) {
+                Double maxReach = getConfiguredValue(source, MAX_REACH_EXTRA_PARAMETER);
+                values.put(MAX_REACH_EXTRA_PARAMETER.id, maxReach == null ? 0D : normalizeExtraValue(MAX_REACH_EXTRA_PARAMETER, maxReach));
+            }
+        }
+
+        return values;
+    }
+
+    private static ParameterRange getLegacyRange(Map<String, ParameterRange> source, ParameterDefinition definition) {
+        double min = 0D;
+        double max = 0D;
+        int found = 0;
+
+        for (String outputId : definition.outputIds) {
+            ParameterRange range = source.get(outputId);
+            if (range != null) {
+                range.normalize();
+                min += range.getMin();
+                max += range.getMax();
+                found++;
+            }
+        }
+
+        return found == 0 ? null : new ParameterRange(definition.showName, min / found, max / found, definition.integer);
+    }
+
+    private static Double getConfiguredValue(Map<String, Double> source, ParameterDefinition definition) {
+        Double value = source.get(definition.id);
+        if (value != null) {
+            return value;
+        }
+
+        double total = 0D;
+        int found = 0;
+        for (String outputId : definition.outputIds) {
+            value = source.get(outputId);
+            if (value != null) {
+                total += value;
+                found++;
+            }
+        }
+
+        return found == 0 ? null : total / found;
+    }
+
+    private static void loadExtraProfiles(JsonElement element, Map<String, Map<String, Double>> extraProfiles) {
+        if (element == null || !element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject object = element.getAsJsonObject();
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            Map<String, Double> values = new LinkedHashMap<>();
+
+            if (entry.getValue() != null && entry.getValue().isJsonObject()) {
+                for (Map.Entry<String, JsonElement> valueEntry : entry.getValue().getAsJsonObject().entrySet()) {
+                    if (valueEntry.getValue() != null && valueEntry.getValue().isJsonPrimitive()) {
+                        values.put(valueEntry.getKey(), valueEntry.getValue().getAsDouble());
+                    }
+                }
+            }
+
+            extraProfiles.put(entry.getKey(), values);
+        }
+    }
+
+    private static double normalizeExtraValue(ParameterDefinition definition, double value) {
+        if (definition.id.equals(MAX_REACH_EXTRA_PARAMETER.id)) {
+            return Math.max(0D, value);
+        }
+
+        return definition.integer ? Math.round(value) : value;
+    }
+
+    private static ParameterDefinition getParameterDefinition(String parameterId) {
+        for (ParameterDefinition definition : DEFAULT_PARAMETERS) {
+            if (definition.id.equals(parameterId)) {
+                return definition;
+            }
+        }
+
+        return null;
+    }
+
+    private static ParameterDefinition getAnyParameterDefinition(String parameterId) {
+        ParameterDefinition definition = getParameterDefinition(parameterId);
+        if (definition != null) {
+            return definition;
+        }
+
+        return MAX_REACH_EXTRA_PARAMETER.id.equals(parameterId) ? MAX_REACH_EXTRA_PARAMETER : null;
+    }
+
+    static String normalizeBotName(String name) {
+        return normalizeName(name);
+    }
+
+    private static String normalizeName(String name) {
+        if (name == null) {
+            return null;
+        }
+        String normalizedName = name.trim();
+        return normalizedName.isEmpty() ? null : normalizedName;
     }
 
     private static File getConfigFile() {
@@ -241,13 +552,15 @@ public final class BotConfig {
         private final double min;
         private final double max;
         private final boolean integer;
+        private final String[] outputIds;
 
-        private ParameterDefinition(String id, String showName, double min, double max, boolean integer) {
+        private ParameterDefinition(String id, String showName, double min, double max, boolean integer, String... outputIds) {
             this.id = id;
             this.showName = showName;
             this.min = min;
             this.max = max;
             this.integer = integer;
+            this.outputIds = outputIds == null || outputIds.length == 0 ? new String[] { id } : outputIds;
         }
 
     }

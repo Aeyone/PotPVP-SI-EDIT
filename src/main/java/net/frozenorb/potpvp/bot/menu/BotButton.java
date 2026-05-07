@@ -3,7 +3,9 @@ package net.frozenorb.potpvp.bot.menu;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.bot.config.BotProfile;
 import net.frozenorb.potpvp.bot.config.ParameterRange;
+import net.frozenorb.potpvp.bot.menu.profile.BotProfileMenu;
 import net.frozenorb.qlib.menu.Button;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,26 +17,27 @@ import java.util.Map;
 
 final class BotButton extends Button {
 
-    private final String botId;
+    private final String botName;
 
-    BotButton(String botId) {
-        this.botId = botId;
+    BotButton(String botName) {
+        this.botName = botName;
     }
 
     @Override
     public String getName(Player player) {
-        return ChatColor.YELLOW + botId;
+        return ChatColor.YELLOW + botName;
     }
 
     @Override
     public List<String> getDescription(Player player) {
         List<String> list = new ArrayList<>();
-        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botId);
+        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botName);
 
         if (profile == null) {
             return list;
         }
 
+        list.add(ChatColor.GRAY + "Status: " + (Bukkit.getPlayer(botName) != null ? ChatColor.GREEN + "Online" : ChatColor.RED + "Offline"));
         list.add("");
         for (Map.Entry<String, ParameterRange> entry : profile.getParameters().entrySet()) {
             String name = entry.getValue().getShowName();
@@ -66,7 +69,7 @@ final class BotButton extends Button {
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
         Button.playNeutral(player);
-        new BotProfileMenu(botId).openMenu(player);
+        new BotProfileMenu(botName).openMenu(player);
     }
 
 }

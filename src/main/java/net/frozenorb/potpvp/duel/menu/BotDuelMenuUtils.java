@@ -15,25 +15,25 @@ final class BotDuelMenuUtils {
     private BotDuelMenuUtils() {
     }
 
-    static void openKitSelection(Player player, String botId) {
+    static void openKitSelection(Player player, String botName) {
         new SelectKitTypeMenu(
             kitType -> {
                 player.closeInventory();
                 if (PotPvPSI.getInstance().getSettingHandler().getSetting(player, Setting.SELECT_MAP)) {
-                    getArenas(player, kitType, allArenas -> prepareDuel(player, botId, kitType, allArenas));
+                    getArenas(player, kitType, allArenas -> prepareDuel(player, botName, kitType, allArenas));
                 } else {
-                    prepareDuel(player, botId, kitType, null);
+                    prepareDuel(player, botName, kitType, null);
                 }
             },
             "Select a kit type..."
         ).openMenu(player);
     }
 
-    private static void prepareDuel(Player player, String botId, KitType kitType, Set<String> allArenas) {
-        if (botId == null) {
+    private static void prepareDuel(Player player, String botName, KitType kitType, Set<String> allArenas) {
+        if (botName == null) {
             PotPvPSI.getInstance().getBotPendingManager().prepareDuel(player, kitType, allArenas);
         } else {
-            PotPvPSI.getInstance().getBotPendingManager().prepareDuel(player, botId, kitType, allArenas);
+            PotPvPSI.getInstance().getBotPendingManager().prepareDuel(player, botName, kitType, allArenas);
         }
     }
 

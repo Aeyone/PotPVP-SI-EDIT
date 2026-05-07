@@ -1,5 +1,6 @@
 package net.frozenorb.potpvp.bot;
 
+import net.frozenorb.potpvp.bot.BotManager.RedisPacket;
 import net.minecraft.util.com.google.gson.Gson;
 import org.bukkit.Bukkit;
 import redis.clients.jedis.Jedis;
@@ -8,8 +9,6 @@ import redis.clients.jedis.JedisPool;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import net.frozenorb.potpvp.bot.BotManager.RedisPacket;
 
 public class RedisManager {
 
@@ -67,7 +66,8 @@ public class RedisManager {
                 Bukkit.getLogger().info("[RedisManager] Redis connection failed, retrying...");
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {
+                }
             }
         }
     }

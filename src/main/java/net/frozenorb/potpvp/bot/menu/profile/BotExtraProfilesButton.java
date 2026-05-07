@@ -1,4 +1,4 @@
-package net.frozenorb.potpvp.duel.menu;
+package net.frozenorb.potpvp.bot.menu.profile;
 
 import com.google.common.collect.ImmutableList;
 import net.frozenorb.potpvp.PotPvPSI;
@@ -10,47 +10,38 @@ import org.bukkit.event.inventory.ClickType;
 
 import java.util.List;
 
-final class BotDuelButton extends Button {
+final class BotExtraProfilesButton extends Button {
 
     private final String botName;
 
-    BotDuelButton(String botName) {
+    BotExtraProfilesButton(String botName) {
         this.botName = botName;
     }
 
     @Override
     public String getName(Player player) {
-        return ChatColor.AQUA + botName;
+        return ChatColor.AQUA.toString() + ChatColor.BOLD + "Extra Profiles";
     }
 
     @Override
     public List<String> getDescription(Player player) {
+        int enabled = PotPvPSI.getInstance().getBotConfig().getBot(botName) == null ? 0 : PotPvPSI.getInstance().getBotConfig().getBot(botName).getEnabledExtraProfiles().size();
         return ImmutableList.of(
+            ChatColor.GRAY + "Enabled: " + ChatColor.WHITE + enabled,
             "",
-            ChatColor.YELLOW + "Click to duel."
+            ChatColor.YELLOW + "Click to choose enabled extra profiles."
         );
     }
 
     @Override
     public Material getMaterial(Player player) {
-        return Material.SKULL_ITEM;
-    }
-
-    @Override
-    public byte getDamageValue(Player player) {
-        return 3;
+        return Material.BOOK;
     }
 
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
-        if (PotPvPSI.getInstance().getBotPendingManager().isNameReserved(botName)) {
-            Button.playFail(player);
-            player.sendMessage(ChatColor.RED + botName + " is already active or loading.");
-            return;
-        }
-
         Button.playNeutral(player);
-        BotDuelMenuUtils.openKitSelection(player, botName);
+        new BotExtraProfilesMenu(botName).openMenu(player);
     }
 
 }

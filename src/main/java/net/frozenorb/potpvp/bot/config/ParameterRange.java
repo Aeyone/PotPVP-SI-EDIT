@@ -54,4 +54,8 @@ public final class ParameterRange {
         }
     }
 
+    public Object formatValue(double value) {
+        return integer ? (int) Math.round(value) : value;
+    }
+
 }

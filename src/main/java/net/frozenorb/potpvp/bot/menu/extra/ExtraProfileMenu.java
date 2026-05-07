@@ -1,8 +1,6 @@
-package net.frozenorb.potpvp.bot.menu;
+package net.frozenorb.potpvp.bot.menu.extra;
 
 import net.frozenorb.potpvp.PotPvPSI;
-import net.frozenorb.potpvp.bot.config.BotProfile;
-import net.frozenorb.potpvp.bot.config.ParameterRange;
 import net.frozenorb.potpvp.util.menu.MenuBackButton;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.pagination.PaginatedMenu;
@@ -11,40 +9,39 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BotProfileMenu extends PaginatedMenu {
+public class ExtraProfileMenu extends PaginatedMenu {
 
-    private final String botId;
+    private final String profileName;
 
-    public BotProfileMenu(String botId) {
-        this.botId = botId;
+    public ExtraProfileMenu(String profileName) {
+        this.profileName = profileName;
         setPlaceholder(true);
     }
 
     @Override
     public String getPrePaginatedTitle(Player player) {
-        return botId;
+        return profileName;
     }
 
     @Override
     public Map<Integer, Button> getGlobalButtons(Player player) {
         Map<Integer, Button> buttons = new HashMap<>();
-        buttons.put(4, new MenuBackButton(p -> new BotConfigMenu().openMenu(p)));
-        buttons.put(6, new DeleteBotButton(botId));
+        buttons.put(4, new MenuBackButton(p -> new ExtraProfilesMenu().openMenu(p)));
+        buttons.put(53, new DeleteExtraProfileButton(profileName));
         return buttons;
     }
 
     @Override
     public Map<Integer, Button> getAllPagesButtons(Player player) {
-        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botId);
         Map<Integer, Button> buttons = new HashMap<>();
         int index = 0;
 
-        if (profile == null) {
+        if (PotPvPSI.getInstance().getBotConfig().getExtraProfile(profileName) == null) {
             return buttons;
         }
 
-        for (Map.Entry<String, ParameterRange> entry : profile.getParameters().entrySet()) {
-            buttons.put(index++, new BotParameterButton(profile.getId(), entry.getKey()));
+        for (String parameterId : PotPvPSI.getInstance().getBotConfig().getExtraProfileParameterIds()) {
+            buttons.put(index++, new ExtraProfileParameterButton(profileName, parameterId));
         }
 
         return buttons;

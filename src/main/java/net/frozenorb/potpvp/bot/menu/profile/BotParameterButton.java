@@ -1,9 +1,10 @@
-package net.frozenorb.potpvp.bot.menu;
+package net.frozenorb.potpvp.bot.menu.profile;
 
 import com.google.common.collect.ImmutableList;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.bot.config.BotProfile;
 import net.frozenorb.potpvp.bot.config.ParameterRange;
+import net.frozenorb.potpvp.bot.menu.BotMenuUtils;
 import net.frozenorb.qlib.menu.Button;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,11 +15,11 @@ import java.util.List;
 
 final class BotParameterButton extends Button {
 
-    private final String botId;
+    private final String botName;
     private final String parameter;
 
-    BotParameterButton(String botId, String parameter) {
-        this.botId = botId;
+    BotParameterButton(String botName, String parameter) {
+        this.botName = botName;
         this.parameter = parameter;
     }
 
@@ -57,11 +58,11 @@ final class BotParameterButton extends Button {
         }
 
         Button.playNeutral(player);
-        BotMenuUtils.startRangeConversation(player, botId, parameter, !clickType.isRightClick());
+        BotMenuUtils.startRangeConversation(player, botName, parameter, !clickType.isRightClick());
     }
 
     private ParameterRange getRange() {
-        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botId);
+        BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(botName);
         return profile == null ? null : profile.getParameters().get(parameter);
     }
 

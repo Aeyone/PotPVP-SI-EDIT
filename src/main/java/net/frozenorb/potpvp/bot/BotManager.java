@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BotManager {
 
     private final Set<String> bots = ConcurrentHashMap.newKeySet();
+    private final Map<String, Map<String, Object>> botSettings = new ConcurrentHashMap<>();
 
     static class RedisPacket {
         String type;
@@ -40,14 +41,23 @@ public class BotManager {
         return bots;
     }
 
+    public Map<String, Object> getSettings(String name) {
+        String storedName = getStoredBotName(name);
+        return storedName == null ? Collections.emptyMap() : botSettings.getOrDefault(storedName, Collections.emptyMap());
+    }
+
+    public boolean isBot(String name) {
+        return getStoredBotName(name) != null;
+    }
+
     public Boolean addBot(String name, Player sender) {
         BotProfile profile = PotPvPSI.getInstance().getBotConfig().getBot(name);
         if (profile == null) {
             return false;
         }
 
-        name = profile.getId();
-        if (bots.contains(name)) {
+        name = profile.getName();
+        if (isBot(name)) {
             delBot(name);
         }
         bots.add(name);
@@ -66,27 +76,42 @@ public class BotManager {
 
         UUID uuid = UUIDUtils.uuid(name);
         Map<String, Object> config = new ConcurrentHashMap<>();
+        Map<String, Object> settings = PotPvPSI.getInstance().getBotConfig().createRandomSettings(name);
         config.put("username", name);
         config.put("uuid", (uuid == null ? UUID.randomUUID() : uuid).toString());
-        config.putAll(profile.createRandomSettings());
+        config.putAll(settings);
+        botSettings.put(name, new LinkedHashMap<>(settings));
 
         send(new RedisPacket("add", config));
+        scheduleJoinTimeout(name);
         return true;
     }
 
     public boolean delBot(String name) {
-        if (!bots.contains(name)) {
-            return false;
-        }
-        bots.remove(name);
-        if (Bukkit.getPlayer(name) != null) {
-            Bukkit.getPlayer(name).kickPlayer("delete fakeplayer.");
+        String storedName = getStoredBotName(name);
+        BotPendingManager pendingManager = PotPvPSI.getInstance().getBotPendingManager();
+        boolean clearedReservation = false;
+        if (pendingManager != null) {
+            clearedReservation = pendingManager.clearReservation(name);
         }
 
-        UUID uuid = UUIDUtils.uuid(name);
+        if (storedName == null) {
+            return clearedReservation;
+        }
+        bots.remove(storedName);
+        botSettings.remove(storedName);
+        if (pendingManager != null) {
+            pendingManager.clearReservation(storedName);
+        }
+
+        if (Bukkit.getPlayer(storedName) != null) {
+            Bukkit.getPlayer(storedName).kickPlayer("delete fakeplayer.");
+        }
+
+        UUID uuid = UUIDUtils.uuid(storedName);
         Map<String, Object> config = new ConcurrentHashMap<>();
 
-        config.put("username", name);
+        config.put("username", storedName);
         config.put("uuid", (uuid == null ? UUID.randomUUID() : uuid).toString());
 
         send(new RedisPacket("del", config));
@@ -115,6 +140,32 @@ public class BotManager {
 
     private void send(RedisPacket packet) {
         PotPvPSI.getInstance().getRedisManager().send(packet);
+    }
+
+    private void scheduleJoinTimeout(String name) {
+        Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), () -> {
+            if (isBot(name) && Bukkit.getPlayer(name) == null) {
+                delBot(name);
+            }
+        }, 20L * 5);
+    }
+
+    private String getStoredBotName(String name) {
+        if (name == null) {
+            return null;
+        }
+
+        if (bots.contains(name)) {
+            return name;
+        }
+
+        for (String bot : bots) {
+            if (bot.equalsIgnoreCase(name)) {
+                return bot;
+            }
+        }
+
+        return null;
     }
 
 }

@@ -1,9 +1,9 @@
-package net.frozenorb.potpvp.bot.menu;
+package net.frozenorb.potpvp.bot.menu.extra;
 
 import com.google.common.collect.ImmutableList;
 import net.frozenorb.potpvp.PotPvPSI;
 import net.frozenorb.potpvp.bot.config.BotConfig;
-import net.frozenorb.potpvp.bot.config.BotProfile;
+import net.frozenorb.potpvp.bot.menu.BotMenuUtils;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.menus.ConfirmMenu;
 import net.frozenorb.qlib.util.Callback;
@@ -14,23 +14,23 @@ import org.bukkit.event.inventory.ClickType;
 
 import java.util.List;
 
-final class DeleteBotButton extends Button {
+final class DeleteExtraProfileButton extends Button {
 
-    private final String botId;
+    private final String profileName;
 
-    DeleteBotButton(String botId) {
-        this.botId = botId;
+    DeleteExtraProfileButton(String profileName) {
+        this.profileName = profileName;
     }
 
     @Override
     public String getName(Player player) {
-        return ChatColor.RED.toString() + ChatColor.BOLD + "Delete Bot";
+        return ChatColor.RED.toString() + ChatColor.BOLD + "Delete Extra Profile";
     }
 
     @Override
     public List<String> getDescription(Player player) {
         return ImmutableList.of(
-            ChatColor.GRAY + "Bot: " + ChatColor.WHITE + botId,
+            ChatColor.GRAY + "Extra Profile: " + ChatColor.WHITE + profileName,
             "",
             ChatColor.RED + "Click to open the confirm menu."
         );
@@ -43,29 +43,26 @@ final class DeleteBotButton extends Button {
 
     @Override
     public void clicked(Player player, int slot, ClickType clickType) {
-        BotConfig config = PotPvPSI.getInstance().getBotConfig();
-        BotProfile profile = config.getBot(botId);
-
-        if (profile == null) {
+        if (PotPvPSI.getInstance().getBotConfig().getExtraProfile(profileName) == null) {
             Button.playFail(player);
-            BotMenuUtils.reopenBotList(player);
+            BotMenuUtils.reopenExtraProfiles(player);
             return;
         }
 
         Button.playNeutral(player);
-        new ConfirmMenu("Delete " + profile.getId() + "?", new Callback<Boolean>() {
+        new ConfirmMenu("Delete " + profileName + "?", new Callback<Boolean>() {
 
             @Override
             public void callback(Boolean confirmed) {
                 if (!confirmed) {
-                    new BotProfileMenu(profile.getId()).openMenu(player);
+                    new ExtraProfileMenu(profileName).openMenu(player);
                     return;
                 }
 
-                PotPvPSI.getInstance().getBotManager().delBot(profile.getId());
-                config.removeBot(profile.getId());
-                player.sendMessage(ChatColor.RED + "Deleted bot " + ChatColor.WHITE + profile.getId() + ChatColor.RED + ".");
-                new BotConfigMenu().openMenu(player);
+                BotConfig config = PotPvPSI.getInstance().getBotConfig();
+                config.removeExtraProfile(profileName);
+                player.sendMessage(ChatColor.RED + "Deleted extra profile " + ChatColor.WHITE + profileName + ChatColor.RED + ".");
+                new ExtraProfilesMenu().openMenu(player);
             }
 
         }).openMenu(player);

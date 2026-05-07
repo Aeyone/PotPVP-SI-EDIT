@@ -1,42 +1,44 @@
-package net.frozenorb.potpvp.duel.menu;
+package net.frozenorb.potpvp.bot.menu.extra;
 
 import net.frozenorb.potpvp.PotPvPSI;
+import net.frozenorb.potpvp.bot.menu.BotConfigMenu;
+import net.frozenorb.potpvp.util.menu.MenuBackButton;
 import net.frozenorb.qlib.menu.Button;
 import net.frozenorb.qlib.menu.pagination.PaginatedMenu;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BotDuelSelectMenu extends PaginatedMenu {
+public class ExtraProfilesMenu extends PaginatedMenu {
 
-    public BotDuelSelectMenu() {
+    public ExtraProfilesMenu() {
         setPlaceholder(true);
     }
 
     @Override
     public String getPrePaginatedTitle(Player player) {
-        return "Select Player";
+        return "Extra Profiles";
     }
 
     @Override
     public Map<Integer, Button> getGlobalButtons(Player player) {
         Map<Integer, Button> buttons = new HashMap<>();
-        buttons.put(4, new RandomBotDuelButton());
+        buttons.put(4, new MenuBackButton(p -> new BotConfigMenu().openMenu(p)));
+
+        buttons.put(53, new AddExtraProfileButton());
         return buttons;
     }
 
     @Override
     public Map<Integer, Button> getAllPagesButtons(Player player) {
         Map<Integer, Button> buttons = new HashMap<>();
-        List<String> botNames = PotPvPSI.getInstance().getBotConfig().getBotNames();
+        List<String> profileNames = PotPvPSI.getInstance().getBotConfig().getExtraProfileNames();
         int index = 0;
 
-        Collections.sort(botNames, String.CASE_INSENSITIVE_ORDER);
-        for (String botName : botNames) {
-            buttons.put(index++, new BotDuelButton(botName));
+        for (String profileName : profileNames) {
+            buttons.put(index++, new ExtraProfileButton(profileName));
         }
 
         return buttons;
@@ -49,7 +51,7 @@ public class BotDuelSelectMenu extends PaginatedMenu {
 
     @Override
     public int getMaxItemsPerPage(Player player) {
-        return 9 * 5;
+        return 9 * 4;
     }
 
 }

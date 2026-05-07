@@ -49,7 +49,7 @@ public class BotPendingManager {
             return;
         }
 
-        String botName = profile.getId();
+        String botName = profile.getName();
         if (isNameReserved(botName)) {
             player.sendMessage(ChatColor.RED + botName + " is already active or loading.");
             return;
@@ -149,7 +149,9 @@ public class BotPendingManager {
 //        String name = PotPvPSI.getInstance().getFakeChatManager().getConfig().generateRandomNickname();
         BotManager botManager = PotPvPSI.getInstance().getBotManager();
         pendingBot.put(name, new BotPendingData(player, kitType, allArenas, pendingType));
-        botManager.addBot(name, player);
+        if (!botManager.addBot(name, player)) {
+            clearReservation(name);
+        }
     }
 
     private void addManualBot(Player player, String name) {
@@ -161,7 +163,7 @@ public class BotPendingManager {
     }
 
     private String randomAvailableName() {
-        List<String> names = PotPvPSI.getInstance().getBotConfig().getBotIds();
+        List<String> names = PotPvPSI.getInstance().getBotConfig().getBotNames();
 
         if (names.isEmpty()) {
             return null;
@@ -188,9 +190,48 @@ public class BotPendingManager {
         return loadingBotNames.contains(nameKey(name)) || isNameActive(name);
     }
 
+    public boolean clearReservation(String name) {
+        boolean removedLoading = loadingBotNames.remove(nameKey(name));
+        boolean removedPending = removePendingBot(name);
+        return removedLoading || removedPending;
+    }
+
     private boolean isNameActive(String name) {
         BotManager botManager = PotPvPSI.getInstance().getBotManager();
-        return Bukkit.getPlayer(name) != null || pendingBot.containsKey(name) || botManager.getList().contains(name);
+        return Bukkit.getPlayer(name) != null || hasPendingBot(name) || botManager.isBot(name);
+    }
+
+    private boolean hasPendingBot(String name) {
+        if (name == null) {
+            return false;
+        }
+
+        if (pendingBot.containsKey(name)) {
+            return true;
+        }
+
+        for (String pendingName : pendingBot.keySet()) {
+            if (pendingName.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean removePendingBot(String name) {
+        if (name == null) {
+            return false;
+        }
+
+        boolean removed = pendingBot.remove(name) != null;
+        for (String pendingName : pendingBot.keySet()) {
+            if (pendingName.equalsIgnoreCase(name)) {
+                removed = pendingBot.remove(pendingName) != null || removed;
+            }
+        }
+
+        return removed;
     }
 
     private String nameKey(String name) {

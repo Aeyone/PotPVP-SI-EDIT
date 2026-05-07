@@ -1,9 +1,9 @@
 package net.frozenorb.potpvp.bot.command;
 
 import net.frozenorb.potpvp.PotPvPSI;
+import net.frozenorb.potpvp.bot.menu.list.BotListMenu;
 import net.frozenorb.qlib.command.Command;
 import net.frozenorb.qlib.command.Param;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -12,15 +12,7 @@ public final class BotCommand {
 
     @Command(names = {"bot list"}, permission = "op")
     public static void list(Player sender) {
-        String msg = null;
-        for (String name : plugin.getBotManager().getList()) {
-            String s = (Bukkit.getPlayer(name) != null ? ChatColor.GREEN : ChatColor.RED) + name;
-            msg = (msg == null ? s : msg + "," + s);
-        }
-        sender.sendMessage("There are (" + plugin.getBotManager().getList().size() + "/100) bot active:");
-        if (msg != null) {
-            sender.sendMessage(msg);
-        }
+        new BotListMenu().openMenu(sender);
     }
 
     @Command(names = {"bot add"}, permission = "op")
