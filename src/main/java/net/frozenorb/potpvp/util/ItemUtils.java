@@ -16,12 +16,7 @@ public final class ItemUtils {
      * Checks if a {@link ItemStack} is an instant heal potion (if its type is {@link PotionType#INSTANT_HEAL})
      */
     public static final Predicate<ItemStack> INSTANT_HEAL_POTION_PREDICATE = item -> {
-        if (item.getType() != Material.POTION) {
-            return false;
-        }
-
-        PotionType potionType = Potion.fromItemStack(item).getType();
-        return potionType == PotionType.INSTANT_HEAL;
+        return getPotionType(item) == PotionType.INSTANT_HEAL;
     };
 
     /**
@@ -33,13 +28,9 @@ public final class ItemUtils {
      * Checks if a {@link ItemStack} is a debuff potion
      */
     public static final Predicate<ItemStack> DEBUFF_POTION_PREDICATE = item -> {
-        if (item.getType() == Material.POTION) {
-            PotionType type = Potion.fromItemStack(item).getType();
-            return type == PotionType.WEAKNESS || type == PotionType.SLOWNESS
-                || type == PotionType.POISON || type == PotionType.INSTANT_DAMAGE;
-        } else {
-            return false;
-        }
+        PotionType type = getPotionType(item);
+        return type == PotionType.WEAKNESS || type == PotionType.SLOWNESS
+            || type == PotionType.POISON || type == PotionType.INSTANT_DAMAGE;
     };
 
     /**
@@ -68,6 +59,18 @@ public final class ItemUtils {
         }
 
         return amountMatching;
+    }
+
+    private static PotionType getPotionType(ItemStack item) {
+        if (item == null || item.getType() != Material.POTION) {
+            return null;
+        }
+
+        try {
+            return Potion.fromItemStack(item).getType();
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
 }
