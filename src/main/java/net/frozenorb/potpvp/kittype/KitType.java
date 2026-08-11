@@ -138,6 +138,15 @@ public final class KitType {
     @Getter @Setter private int sort = 0;
 
     @Getter @Setter private boolean supportsRanked = false;
+    /**
+     * Misplace combat timing and packet delay settings for matches using this kit type.
+     * Delay and step are expressed in ticks (1.0 = 50 milliseconds).
+     */
+    @Getter @Setter private long misplaceAttackWindowMs = 1800L;
+    @Getter @Setter private long misplaceDamageWindowMs = 800L;
+    @Getter @Setter private double misplaceDelay = 1.0D;
+    @Getter @Setter private double misplaceStep = 0.2D;
+
 
     public static KitType byId(String id) {
         for (KitType kitType : allTypes) {

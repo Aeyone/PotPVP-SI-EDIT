@@ -64,6 +64,7 @@ import net.frozenorb.potpvp.listener.TabCompleteListener;
 import net.frozenorb.potpvp.lobby.LobbyHandler;
 import net.frozenorb.potpvp.match.Match;
 import net.frozenorb.potpvp.match.MatchHandler;
+import net.frozenorb.potpvp.misplace.MisplaceHandler;
 import net.frozenorb.potpvp.nametag.PotPvPNametagProvider;
 import net.frozenorb.potpvp.party.PartyHandler;
 import net.frozenorb.potpvp.postmatchinv.PostMatchInvHandler;
@@ -125,6 +126,7 @@ public final class PotPvPSI extends JavaPlugin {
     @Getter private RedisManager redisManager;
     @Getter private BotPendingManager botPendingManager;
     @Getter private BotConfig botConfig;
+    @Getter private MisplaceHandler misplaceHandler;
 
     @Getter private ChatColor dominantColor = ChatColor.RED;
     private static String CHANNEL = "bot-chat";
@@ -171,6 +173,7 @@ public final class PotPvPSI extends JavaPlugin {
         lobbyHandler = new LobbyHandler();
         arenaHandler = new ArenaHandler();
         matchHandler = new MatchHandler();
+        misplaceHandler = new MisplaceHandler(this);
         partyHandler = new PartyHandler();
         queueHandler = new QueueHandler();
         rematchHandler = new RematchHandler();
@@ -209,6 +212,7 @@ public final class PotPvPSI extends JavaPlugin {
         getServer().getPluginManager().registerEvents(statisticsHandler, this);
         getServer().getPluginManager().registerEvents(matchHistoryHandler, this);
         getServer().getPluginManager().registerEvents(new BotListener(), this);
+        getServer().getPluginManager().registerEvents(misplaceHandler, this);
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord"); // Register a channel to send messages to Bungee
 
@@ -237,6 +241,10 @@ public final class PotPvPSI extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (misplaceHandler != null) {
+            misplaceHandler.shutdown();
+        }
+
         for (Match match : this.matchHandler.getHostedMatches()) {
             if (match.getKitType().isBuildingAllowed()) match.getArena().restore();
         }

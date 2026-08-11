@@ -2,5 +2,5 @@ name: PotPvP
 version: ${plugin.version}
 author: A_Eyone
 main: net.frozenorb.potpvp.PotPvPSI
-depend: [ qLib ]
+depend: [ qLib, ProtocolLib ]
 softdepend: [ Basic, AntiCheat ]

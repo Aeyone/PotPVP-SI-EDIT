@@ -84,6 +84,31 @@ public class ManageKitTypeMenu extends Menu {
 
         buttons.put(getSlot(1, 0), new SaveKitTypeButton(type));
         buttons.put(getSlot(2, 0), new CancelKitTypeEditButton());
+        buttons.put(getSlot(4, 0), new Button() {
+
+            @Override
+            public String getName(Player player) {
+                return ChatColor.GOLD.toString() + ChatColor.BOLD + "Misplace Settings";
+            }
+
+            @Override
+            public List<String> getDescription(Player player) {
+                return ImmutableList.of(
+                    "",
+                    ChatColor.GREEN.toString() + ChatColor.BOLD + "Click to configure"
+                );
+            }
+
+            @Override
+            public Material getMaterial(Player player) {
+                return Material.WATCH;
+            }
+
+            @Override
+            public void clicked(Player player, int slot, ClickType clickType) {
+                new MisplaceSettingsMenu(type).openMenu(player);
+            }
+        });
 
         buttons.put(getSlot(8, 0), new MenuBackButton(p -> new ManageCommand.ManageMenu().openMenu(p)));
 
