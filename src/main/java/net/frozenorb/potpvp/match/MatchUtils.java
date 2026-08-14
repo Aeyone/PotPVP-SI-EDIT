@@ -35,6 +35,11 @@ public final class MatchUtils {
         inventory.clear();
         inventory.setArmorContents(null);
 
+        if (match.isSumoRoundSpectator(player.getUniqueId())) {
+            Bukkit.getScheduler().runTaskLater(PotPvPSI.getInstance(), player::updateInventory, 1L);
+            return;
+        }
+
         // don't give players who die (and cause the match to end)
         // a fire item, they'll be sent back to the lobby in a few seconds anyway
         if (match.getState() != MatchState.ENDING) {

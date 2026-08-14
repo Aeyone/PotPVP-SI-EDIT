@@ -159,6 +159,10 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
 
         // this method won't be called if the player isn't a participant
         MatchTeam ourTeam = match.getTeam(player.getUniqueId());
+        if (ourTeam == null) {
+            return false;
+        }
+
         MatchTeam otherTeam = teams.get(0) == ourTeam ? teams.get(1) : teams.get(0);
 
         // we use getAllMembers instead of getAliveMembers to avoid
@@ -169,9 +173,9 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         if (ourTeamSize == 1 && otherTeamSize == 1) {
             render1v1MatchLines(scores, otherTeam);
         } else if (ourTeamSize <= 2 && otherTeamSize <= 2) {
-            render2v2MatchLines(scores, ourTeam, otherTeam, player, match.getKitType().getHealingMethod());
+            render2v2MatchLines(scores, ourTeam, otherTeam, player, match.getKitType().getHealingMethod(), match.getState());
         } else if (ourTeamSize <= 4 && otherTeamSize <= 4) {
-            render4v4MatchLines(scores, ourTeam, otherTeam);
+            render4v4MatchLines(scores, ourTeam, otherTeam, match.getState());
         } else if (ourTeam.getAllMembers().size() <= 9) {
             renderLargeMatchLines(scores, ourTeam, otherTeam);
         } else {
@@ -201,7 +205,7 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         scores.add("&c&lOpponent: &f" + FrozenUUIDCache.name(otherTeam.getFirstMember()));
     }
 
-    private void render2v2MatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam, Player player, HealingMethod healingMethod) {
+    private void render2v2MatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam, Player player, HealingMethod healingMethod, MatchState matchState) {
         // 2v2, but potentially 1v2 / 1v1 if players have died
         UUID partnerUuid = null;
 
@@ -217,8 +221,8 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
             String healsStr;
             String namePrefix;
 
-            if (ourTeam.isAlive(partnerUuid)) {
-                Player partnerPlayer = Bukkit.getPlayer(partnerUuid); // will never be null (or isAlive would've returned false)
+            Player partnerPlayer = Bukkit.getPlayer(partnerUuid);
+            if (ourTeam.isAlive(partnerUuid) && partnerPlayer != null) {
                 double health = Math.round(partnerPlayer.getHealth()) / 2D;
                 int heals = healsLeft.getOrDefault(partnerUuid, 0);
 
@@ -272,19 +276,19 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         scores.addAll(renderTeamMemberOverviewLines(otherTeam));
 
         // Removes the space
-        if (PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(player).getState() == MatchState.IN_PROGRESS) {
+        if (matchState == MatchState.IN_PROGRESS) {
             scores.add("&c");
         }
     }
 
-    private void render4v4MatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam) {
+    private void render4v4MatchLines(List<String> scores, MatchTeam ourTeam, MatchTeam otherTeam, MatchState matchState) {
         // Above a 2v2, but up to a 4v4.
         scores.add("&aTeam &a(" + ourTeam.getAliveMembers().size() + "/" + ourTeam.getAllMembers().size() + ")");
         scores.addAll(renderTeamMemberOverviewLinesWithHearts(ourTeam));
         scores.add("&b");
         scores.add("&c&lOpponents &c(" + otherTeam.getAliveMembers().size() + "/" + otherTeam.getAllMembers().size() + ")");
         scores.addAll(renderTeamMemberOverviewLines(otherTeam));
-        if (PotPvPSI.getInstance().getMatchHandler().getMatchPlaying(Bukkit.getPlayer(ourTeam.getFirstAliveMember())).getState() == MatchState.IN_PROGRESS) {
+        if (matchState == MatchState.IN_PROGRESS) {
             scores.add("&c");
         }
     }
@@ -424,8 +428,8 @@ final class MatchScoreGetter implements BiConsumer<Player, LinkedList<String>> {
         if (partnerUuid != null) {
             String healthStr;
 
-            if (ourTeam.isAlive(partnerUuid)) {
-                Player partnerPlayer = Bukkit.getPlayer(partnerUuid); // will never be null (or isAlive would've returned false)
+            Player partnerPlayer = Bukkit.getPlayer(partnerUuid);
+            if (ourTeam.isAlive(partnerUuid) && partnerPlayer != null) {
                 double health = Math.round(partnerPlayer.getHealth()) / 2D;
 
                 ChatColor healthColor;

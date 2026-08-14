@@ -67,27 +67,27 @@ public final class LobbyUtils {
             if (partySize == 2) {
                 if (!queueHandler.isQueuedUnranked(party)) {
                     inventory.setItem(1, QueueItems.JOIN_PARTY_UNRANKED_QUEUE_ITEM);
-                    inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
+//                    inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
                 } else {
                     inventory.setItem(1, QueueItems.LEAVE_PARTY_UNRANKED_QUEUE_ITEM);
                 }
 
                 if (!queueHandler.isQueuedRanked(party)) {
                     inventory.setItem(2, QueueItems.JOIN_PARTY_RANKED_QUEUE_ITEM);
-                    inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
+//                    inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
                 } else {
                     inventory.setItem(2, QueueItems.LEAVE_PARTY_RANKED_QUEUE_ITEM);
                 }
             } else if (partySize > 2 && !queueHandler.isQueued(party)) {
                 inventory.setItem(1, PartyItems.START_TEAM_SPLIT_ITEM);
                 inventory.setItem(2, PartyItems.START_FFA_ITEM);
-                inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
+//                inventory.setItem(3, PartyItems.ASSIGN_CLASSES);
             }
 
         } else {
             int partySize = party.getMembers().size();
             if (partySize >= 2) {
-                inventory.setItem(1, PartyItems.ASSIGN_CLASSES);
+//                inventory.setItem(1, PartyItems.ASSIGN_CLASSES);
             }
         }
 

@@ -1,6 +1,7 @@
 package net.frozenorb.potpvp.match;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +67,8 @@ import net.hylist.profile.PotionProfile;
 public final class Match {
     
     private static final int MATCH_END_DELAY_SECONDS = 3;
+    private static final int SUMO_ROUNDS_TO_WIN = 3;
+    private static final int SUMO_COUNTDOWN_SECONDS = 3;
     
     @Getter
     private final String _id = UUID.randomUUID().toString().substring(0, 7);
@@ -78,6 +81,10 @@ public final class Match {
     private final List<MatchTeam> teams; // immutable so @Getter is ok
     private final Map<UUID, PostMatchPlayer> postMatchPlayers = new HashMap<>();
     private final Set<UUID> spectators = new HashSet<>();
+    private final transient Map<MatchTeam, Integer> sumoRoundWins = new HashMap<>();
+    private final transient Set<UUID> sumoRoundSpectators = new HashSet<>();
+    private final transient Set<UUID> sumoWithdrawnPlayers = new HashSet<>();
+    private transient BukkitRunnable countdownTask;
     
     @Getter
     private MatchTeam winner;
@@ -159,14 +166,31 @@ public final class Match {
     }
 
     private void applyConfig(){
-        KnockbackProfile kbProfile = SpigotConfig.knockbackManager.getProfileByName(this.kitType.getId());
         PotionProfile potProfile = SpigotConfig.potionManager.getProfileByName(this.kitType.getId());
 
         for (MatchTeam team : teams) {
             for (UUID playerUuid : team.getAllMembers()) {
                 Player player = Bukkit.getPlayer(playerUuid);
-                player.setKbProfile(kbProfile);
-                player.setPotProfile(potProfile);
+                if (player != null) {
+                    player.setPotProfile(potProfile);
+                }
+            }
+        }
+    }
+
+    private void applyKnockbackProfile() {
+        KnockbackProfile kbProfile = SpigotConfig.knockbackManager.getProfileByName(this.kitType.getId());
+
+        for (MatchTeam team : teams) {
+            for (UUID playerUuid : team.getAliveMembers()) {
+                if (!isControllingPlayer(playerUuid)) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player != null) {
+                    player.setKbProfile(kbProfile);
+                }
             }
         }
     }
@@ -177,24 +201,42 @@ public final class Match {
     }
     
     void startCountdown() {
+        startCountdown(5, true);
+    }
+
+    private void startCountdown(int countdownSeconds, boolean initialCountdown) {
+        cancelCountdownTask();
         state = MatchState.COUNTDOWN;
-        
-        Map<UUID, Match> playingCache = PotPvPSI.getInstance().getMatchHandler().getPlayingMatchCache();
+
         Set<Player> updateVisiblity = new HashSet<>();
-        
+
         for (MatchTeam team : this.getTeams()) {
             for (UUID playerUuid : team.getAllMembers()) {
-                
+
                 if (!team.isAlive(playerUuid))
                     continue;
-                
+
                 Player player = Bukkit.getPlayer(playerUuid);
-                
-                playingCache.put(player.getUniqueId(), this);
-                
+                if (player == null) {
+                    team.markDead(playerUuid);
+                    if (isSumoBo5()) {
+                        sumoWithdrawnPlayers.add(playerUuid);
+                        releasePlayerOwnership(playerUuid);
+                    }
+                    continue;
+                }
+
+                if (!claimPlayingOwnership(playerUuid)) {
+                    team.markDead(playerUuid);
+                    if (isSumoBo5()) {
+                        sumoWithdrawnPlayers.add(playerUuid);
+                    }
+                    continue;
+                }
+
                 Location spawn = (team == teams.get(0) ? arena.getTeam1Spawn() : arena.getTeam2Spawn()).clone();
                 Vector oldDirection = spawn.getDirection();
-                
+
                 Block block = spawn.getBlock();
                 while (block.getRelative(BlockFace.DOWN).getType() == Material.AIR) {
                     block = block.getRelative(BlockFace.DOWN);
@@ -207,52 +249,88 @@ public final class Match {
                 spawn = block.getLocation();
                 spawn.setDirection(oldDirection);
                 spawn.add(0.5, 0, 0.5);
-                
+
                 player.teleport(spawn);
+                player.setVelocity(new Vector());
+                player.setFallDistance(0F);
                 player.getInventory().setHeldItemSlot(0);
                 if (player.hasMetadata("Build")) {
                     player.removeMetadata("Build", PotPvPSI.getInstance());
                 }
-                
+
                 FrozenNametagHandler.reloadPlayer(player);
                 FrozenNametagHandler.reloadOthersFor(player);
-                
+
                 updateVisiblity.add(player);
                 PatchedPlayerUtils.resetInventory(player, GameMode.SURVIVAL);
             }
         }
-        
+
+        if (finishSumoIfTeamUnavailable()) {
+            return;
+        }
+
+        applyKnockbackProfile();
+
         // we wait to update visibility until everyone's been put in the player cache
         // then we update vis, otherwise the update code will see 'partial' views of the
         // match
         updateVisiblity.forEach(VisibilityUtils::updateVisibilityFlicker);
         sendFriendlyUuidsToBots();
-        
-        Bukkit.getPluginManager().callEvent(new MatchCountdownStartEvent(this));
-        
-        new BukkitRunnable() {
-            
-            int countdownTimeRemaining = kitType.getId().equals("SUMO") ? 5 : 5;
-            
+
+        if (initialCountdown) {
+            Bukkit.getPluginManager().callEvent(new MatchCountdownStartEvent(this));
+        }
+
+        BukkitRunnable task = new BukkitRunnable() {
+
+            int countdownTimeRemaining = countdownSeconds;
+
             public void run() {
-                if (state != MatchState.COUNTDOWN) {
+                if (Match.this.countdownTask != this) {
                     cancel();
                     return;
                 }
-                
+
+                if (state != MatchState.COUNTDOWN) {
+                    cancel();
+                    Match.this.countdownTask = null;
+                    return;
+                }
+
                 if (countdownTimeRemaining == 0) {
+                    cancel();
+                    Match.this.countdownTask = null;
                     playSoundAll(Sound.NOTE_PLING, 2F);
-                    startMatch();
+                    if (initialCountdown) {
+                        startMatch();
+                    } else {
+                        resumeSumoRound();
+                    }
                     return; // so we don't send '0...' message
                 } else if (countdownTimeRemaining <= 3) {
                     playSoundAll(Sound.NOTE_PLING, 1F);
                 }
-                
+
                 messageAll(ChatColor.YELLOW.toString() + countdownTimeRemaining + "...");
                 countdownTimeRemaining--;
             }
-            
-        }.runTaskTimer(PotPvPSI.getInstance(), 0L, 20L);
+
+        };
+
+        countdownTask = task;
+        task.runTaskTimer(PotPvPSI.getInstance(), 0L, 20L);
+    }
+
+    private void cancelCountdownTask() {
+        if (countdownTask != null) {
+            countdownTask.cancel();
+            countdownTask = null;
+        }
+    }
+
+    private void resumeSumoRound() {
+        state = MatchState.IN_PROGRESS;
     }
     
     private void startMatch() {
@@ -271,7 +349,7 @@ public final class Match {
                 Player player = Bukkit.getPlayer(playerUuid);
 
                 if (player != null && botManager.getList().contains(player.getName())) {
-                    botManager.applyFriendlyUuids(player, team.getAllMembers());
+                    botManager.applyFriendlyUuids(player, team.getAliveMembers());
                 }
             }
         }
@@ -282,7 +360,8 @@ public final class Match {
         if (state == MatchState.ENDING || state == MatchState.TERMINATED) {
             return;
         }
-        
+
+        cancelCountdownTask();
         state = MatchState.ENDING;
         endedAt = new Date();
         endReason = reason;
@@ -294,7 +373,14 @@ public final class Match {
                     if (!matchTeam.isAlive(playerUuid))
                         continue;
                     Player player = Bukkit.getPlayer(playerUuid);
-                    
+
+                    if (player == null || !isControllingPlayer(playerUuid)) {
+                        matchTeam.markDead(playerUuid);
+                        sumoWithdrawnPlayers.add(playerUuid);
+                        releasePlayerOwnership(playerUuid);
+                        continue;
+                    }
+
                     postMatchPlayers.computeIfAbsent(
                             playerUuid,
                             v -> new PostMatchPlayer(
@@ -402,29 +488,42 @@ public final class Match {
         getTeams().forEach(team -> {
             team.getAllMembers().forEach(player -> {
                 if (team.isAlive(player)) {
-                    playingCache.remove(player);
-                    spectateCache.remove(player);
+                    boolean ownedByThisMatch = playingCache.remove(player, this);
+                    ownedByThisMatch |= spectateCache.remove(player, this);
+
+                    if (!ownedByThisMatch) {
+                        return;
+                    }
 
                     if (botManager.getList().contains(UUIDUtils.name(player))) {
                         botManager.delBot(UUIDUtils.name(player));
                     } else {
-                        lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+                        Player onlinePlayer = Bukkit.getPlayer(player);
+                        if (onlinePlayer != null) {
+                            lobbyHandler.returnToLobby(onlinePlayer);
+                        }
                     }
                 }
             });
         });
         
         spectators.forEach(player -> {
-            if (Bukkit.getPlayer(player) != null) {
-                playingCache.remove(player);
-                spectateCache.remove(player);
+            Player onlinePlayer = Bukkit.getPlayer(player);
+            boolean ownedByThisMatch = playingCache.remove(player, this);
+            ownedByThisMatch |= spectateCache.remove(player, this);
+
+            if (onlinePlayer != null && ownedByThisMatch) {
                 if (botManager.getList().contains(UUIDUtils.name(player))) {
                     botManager.delBot(UUIDUtils.name(player));
                 } else {
-                    lobbyHandler.returnToLobby(Bukkit.getPlayer(player));
+                    lobbyHandler.returnToLobby(onlinePlayer);
                 }
             }
         });
+
+        sumoRoundSpectators.clear();
+        sumoWithdrawnPlayers.clear();
+        spectators.clear();
     }
     
     public Set<UUID> getSpectators() {
@@ -433,6 +532,139 @@ public final class Match {
     
     public Map<UUID, PostMatchPlayer> getPostMatchPlayers() {
         return ImmutableMap.copyOf(postMatchPlayers);
+    }
+
+    public boolean handleSumoRoundLoss(Player loser) {
+        if (!kitType.getId().equals("SUMO") || state != MatchState.IN_PROGRESS || teams.size() != 2) {
+            return false;
+        }
+
+        MatchTeam losingTeam = getTeam(loser.getUniqueId());
+        if (losingTeam == null) {
+            return false;
+        }
+
+        markDead(loser, false);
+        addSumoRoundSpectator(loser);
+
+        if (!losingTeam.getAliveMembers().isEmpty()) {
+            return true;
+        }
+
+        MatchTeam winningTeam = teams.get(0) == losingTeam ? teams.get(1) : teams.get(0);
+        int wins = sumoRoundWins.getOrDefault(winningTeam, 0) + 1;
+        sumoRoundWins.put(winningTeam, wins);
+
+        if (wins >= SUMO_ROUNDS_TO_WIN) {
+            winner = winningTeam;
+            endMatch(MatchEndReason.ENEMIES_ELIMINATED);
+            return true;
+        }
+
+        int roundsRemaining = SUMO_ROUNDS_TO_WIN - wins;
+        String winnerName = UUIDUtils.name(winningTeam.getFirstAliveMember());
+
+        for (MatchTeam team : teams) {
+            for (UUID playerUuid : team.getAllMembers()) {
+                if (!isControllingPlayer(playerUuid)) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player == null) {
+                    continue;
+                }
+
+                if (team == winningTeam) {
+                    player.sendMessage(
+                        ChatColor.YELLOW + "You have "+
+                        ChatColor.GREEN + "won" +
+                        ChatColor.YELLOW + " the round, you need " +
+                        ChatColor.LIGHT_PURPLE + roundsRemaining +
+                        ChatColor.YELLOW + " more to win."
+                    );
+                } else {
+                    player.sendMessage(
+                        ChatColor.WHITE + winnerName +
+                        ChatColor.YELLOW + " has " +
+                        ChatColor.GREEN + "won" +
+                        ChatColor.YELLOW + " the round, they need " +
+                        ChatColor.LIGHT_PURPLE + roundsRemaining +
+                        ChatColor.YELLOW + " more to win."
+                    );
+                }
+            }
+        }
+
+        for (UUID spectatorUuid : spectators) {
+            if (!isControllingPlayer(spectatorUuid) || getPreviousTeam(spectatorUuid) != null) {
+                continue;
+            }
+
+            Player spectator = Bukkit.getPlayer(spectatorUuid);
+            if (spectator != null) {
+                spectator.sendMessage(
+                    ChatColor.WHITE + winnerName +
+                    ChatColor.YELLOW + " has " +
+                    ChatColor.GREEN + "won" +
+                    ChatColor.YELLOW + " the round, they need " +
+                    ChatColor.LIGHT_PURPLE + roundsRemaining +
+                    ChatColor.YELLOW + " more to win."
+                );
+            }
+        }
+
+        for (MatchTeam team : teams) {
+            Set<UUID> nextRoundMembers = new HashSet<>();
+
+            for (UUID playerUuid : team.getAllMembers()) {
+                if (sumoWithdrawnPlayers.contains(playerUuid)) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player == null) {
+                    sumoWithdrawnPlayers.add(playerUuid);
+                    removeSumoRoundSpectator(playerUuid);
+                    releasePlayerOwnership(playerUuid);
+                    continue;
+                }
+
+                if (isOwnedByAnotherMatch(playerUuid)) {
+                    sumoWithdrawnPlayers.add(playerUuid);
+                    removeSumoRoundSpectator(playerUuid);
+                    releasePlayerOwnership(playerUuid);
+                    continue;
+                }
+
+                nextRoundMembers.add(playerUuid);
+            }
+
+            team.resetAliveMembers(nextRoundMembers);
+
+            for (UUID playerUuid : nextRoundMembers) {
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player == null) {
+                    team.markDead(playerUuid);
+                    sumoWithdrawnPlayers.add(playerUuid);
+                    releasePlayerOwnership(playerUuid);
+                    continue;
+                }
+
+                postMatchPlayers.remove(playerUuid);
+                removeSumoRoundSpectator(playerUuid);
+
+                player.setFlying(false);
+                player.setAllowFlight(false);
+            }
+        }
+
+        if (finishSumoIfTeamUnavailable()) {
+            return true;
+        }
+
+        startCountdown(SUMO_COUNTDOWN_SECONDS, false);
+        return true;
     }
     
     private void checkEnded() {
@@ -457,6 +689,112 @@ public final class Match {
     public boolean isSpectator(UUID uuid) {
         return spectators.contains(uuid);
     }
+
+    public boolean isSumoRoundSpectator(UUID uuid) {
+        return sumoRoundSpectators.contains(uuid);
+    }
+
+    public boolean isControllingPlayer(UUID playerUuid) {
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        return matchHandler.getPlayingMatchCache().get(playerUuid) == this ||
+            matchHandler.getSpectatingMatchCache().get(playerUuid) == this;
+    }
+
+    public boolean hasWithdrawnPlayers() {
+        return !sumoWithdrawnPlayers.isEmpty();
+    }
+
+    public boolean withdrawSumoParticipant(UUID playerUuid, boolean returnToLobby) {
+        Set<UUID> player = new HashSet<>();
+        player.add(playerUuid);
+        return withdrawSumoParticipants(player, returnToLobby);
+    }
+
+    public boolean withdrawSumoParticipants(Collection<UUID> playerUuids, boolean returnToLobby) {
+        if (!isSumoBo5() || playerUuids.isEmpty()) {
+            return false;
+        }
+
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        List<Player> playersToReturn = new ArrayList<>();
+        boolean changed = false;
+
+        for (UUID playerUuid : new HashSet<>(playerUuids)) {
+            MatchTeam team = getPreviousTeam(playerUuid);
+            if (team == null || sumoWithdrawnPlayers.contains(playerUuid)) {
+                continue;
+            }
+
+            boolean controlledByThisMatch = isControllingPlayer(playerUuid);
+            Player player = Bukkit.getPlayer(playerUuid);
+
+            sumoWithdrawnPlayers.add(playerUuid);
+            changed = true;
+
+            if (team.isAlive(playerUuid)) {
+                team.markDead(playerUuid);
+                if (controlledByThisMatch && player != null) {
+                    capturePostMatchPlayer(player);
+                }
+            }
+
+            sumoRoundSpectators.remove(playerUuid);
+            spectators.remove(playerUuid);
+            releasePlayerOwnership(playerUuid);
+
+            if (
+                returnToLobby &&
+                controlledByThisMatch &&
+                player != null &&
+                !matchHandler.isPlayingOrSpectatingMatch(player)
+            ) {
+                playersToReturn.add(player);
+            }
+        }
+
+        for (Player player : playersToReturn) {
+            PotPvPSI.getInstance().getLobbyHandler().returnToLobby(player);
+        }
+
+        if (changed && (state == MatchState.COUNTDOWN || state == MatchState.IN_PROGRESS)) {
+            finishSumoIfTeamUnavailable();
+        }
+
+        return changed;
+    }
+
+    private void addSumoRoundSpectator(Player player) {
+        Map<UUID, Match> spectateCache = PotPvPSI.getInstance().getMatchHandler().getSpectatingMatchCache();
+
+        if (isOwnedByAnotherMatch(player.getUniqueId())) {
+            sumoWithdrawnPlayers.add(player.getUniqueId());
+            return;
+        }
+
+        spectateCache.put(player.getUniqueId(), this);
+        spectators.add(player.getUniqueId());
+        sumoRoundSpectators.add(player.getUniqueId());
+
+        player.getInventory().clear();
+        player.getInventory().setArmorContents(null);
+        player.getInventory().setHeldItemSlot(0);
+        FrozenNametagHandler.reloadPlayer(player);
+        FrozenNametagHandler.reloadOthersFor(player);
+        VisibilityUtils.updateVisibility(player);
+        PatchedPlayerUtils.resetInventory(player, GameMode.CREATIVE, true);
+        player.setAllowFlight(true);
+        player.setFlying(true);
+    }
+
+    private void removeSumoRoundSpectator(UUID playerUuid) {
+        if (!sumoRoundSpectators.remove(playerUuid)) {
+            return;
+        }
+
+        Map<UUID, Match> spectateCache = PotPvPSI.getInstance().getMatchHandler().getSpectatingMatchCache();
+        spectateCache.remove(playerUuid, this);
+        spectators.remove(playerUuid);
+    }
     
     public void addSpectator(Player player, Player target) {
         addSpectator(player, target, false);
@@ -471,7 +809,12 @@ public final class Match {
         }
         
         Map<UUID, Match> spectateCache = PotPvPSI.getInstance().getMatchHandler().getSpectatingMatchCache();
-        
+
+        if (isOwnedByAnotherMatch(player.getUniqueId())) {
+            player.sendMessage(ChatColor.RED + "You are already spectating another match.");
+            return;
+        }
+
         spectateCache.put(player.getUniqueId(), this);
         spectators.add(player.getUniqueId());
         
@@ -509,9 +852,18 @@ public final class Match {
     }
     
     public void removeSpectator(Player player, boolean returnToLobby) {
+        if (isSumoRoundSpectator(player.getUniqueId())) {
+            withdrawSumoParticipant(player.getUniqueId(), returnToLobby);
+            return;
+        }
+
         Map<UUID, Match> spectateCache = PotPvPSI.getInstance().getMatchHandler().getSpectatingMatchCache();
-        
-        spectateCache.remove(player.getUniqueId());
+
+        if (!spectateCache.remove(player.getUniqueId(), this)) {
+            spectators.remove(player.getUniqueId());
+            return;
+        }
+
         spectators.remove(player.getUniqueId());
         ItemListener.addButtonCooldown(player, 1_500);
         
@@ -547,17 +899,26 @@ public final class Match {
     }
     
     public void markDead(Player player) {
+        markDead(player, true);
+    }
+
+    private void markDead(Player player, boolean checkForEnd) {
         MatchTeam team = getTeam(player.getUniqueId());
         
         if (team == null) {
             return;
         }
         
-        Map<UUID, Match> playingCache = PotPvPSI.getInstance().getMatchHandler().getPlayingMatchCache();
-        
         team.markDead(player.getUniqueId());
-        playingCache.remove(player.getUniqueId());
-        
+        PotPvPSI.getInstance().getMatchHandler().getPlayingMatchCache().remove(player.getUniqueId(), this);
+        capturePostMatchPlayer(player);
+
+        if (checkForEnd) {
+            checkEnded();
+        }
+    }
+
+    private void capturePostMatchPlayer(Player player) {
         postMatchPlayers.put(
                 player.getUniqueId(),
                 new PostMatchPlayer(
@@ -573,7 +934,59 @@ public final class Match {
                         missedDebuffs.getOrDefault(player.getUniqueId(), 0.0D)
                 )
         );
-        checkEnded();
+    }
+
+    private boolean isSumoBo5() {
+        return kitType.getId().equals("SUMO") && teams.size() == 2;
+    }
+
+    private boolean claimPlayingOwnership(UUID playerUuid) {
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        Match playingMatch = matchHandler.getPlayingMatchCache().get(playerUuid);
+        Match spectatingMatch = matchHandler.getSpectatingMatchCache().get(playerUuid);
+
+        if ((playingMatch != null && playingMatch != this) || (spectatingMatch != null && spectatingMatch != this)) {
+            return false;
+        }
+
+        matchHandler.getPlayingMatchCache().put(playerUuid, this);
+        return true;
+    }
+
+    private boolean isOwnedByAnotherMatch(UUID playerUuid) {
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        Match playingMatch = matchHandler.getPlayingMatchCache().get(playerUuid);
+        Match spectatingMatch = matchHandler.getSpectatingMatchCache().get(playerUuid);
+
+        return (playingMatch != null && playingMatch != this) || (spectatingMatch != null && spectatingMatch != this);
+    }
+
+    private boolean releasePlayerOwnership(UUID playerUuid) {
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        boolean released = matchHandler.getPlayingMatchCache().remove(playerUuid, this);
+        released |= matchHandler.getSpectatingMatchCache().remove(playerUuid, this);
+        return released;
+    }
+
+    private boolean finishSumoIfTeamUnavailable() {
+        if (!isSumoBo5() || state == MatchState.ENDING || state == MatchState.TERMINATED) {
+            return state == MatchState.ENDING || state == MatchState.TERMINATED;
+        }
+
+        List<MatchTeam> teamsAlive = new ArrayList<>();
+        for (MatchTeam team : teams) {
+            if (!team.getAliveMembers().isEmpty()) {
+                teamsAlive.add(team);
+            }
+        }
+
+        if (teamsAlive.size() >= 2) {
+            return false;
+        }
+
+        winner = teamsAlive.size() == 1 ? teamsAlive.get(0) : null;
+        endMatch(MatchEndReason.ENEMIES_ELIMINATED);
+        return true;
     }
     
     public MatchTeam getTeam(UUID playerUuid) {
@@ -667,6 +1080,10 @@ public final class Match {
      */
     public void messageSpectators(String message) {
         for (UUID spectator : spectators) {
+            if (!isControllingPlayer(spectator)) {
+                continue;
+            }
+
             Player spectatorBukkit = Bukkit.getPlayer(spectator);
             
             if (spectatorBukkit != null) {
@@ -685,6 +1102,10 @@ public final class Match {
      */
     public void playSoundSpectators(Sound sound, float pitch) {
         for (UUID spectator : spectators) {
+            if (!isControllingPlayer(spectator)) {
+                continue;
+            }
+
             Player spectatorBukkit = Bukkit.getPlayer(spectator);
             
             if (spectatorBukkit != null) {
@@ -702,7 +1123,16 @@ public final class Match {
      */
     public void messageAlive(String message) {
         for (MatchTeam team : teams) {
-            team.messageAlive(message);
+            for (UUID playerUuid : team.getAliveMembers()) {
+                if (!isControllingPlayer(playerUuid)) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player != null) {
+                    player.sendMessage(message);
+                }
+            }
         }
     }
     
@@ -716,7 +1146,16 @@ public final class Match {
      */
     public void playSoundAlive(Sound sound, float pitch) {
         for (MatchTeam team : teams) {
-            team.playSoundAlive(sound, pitch);
+            for (UUID playerUuid : team.getAliveMembers()) {
+                if (!isControllingPlayer(playerUuid)) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player != null) {
+                    player.playSound(player.getLocation(), sound, 10F, pitch);
+                }
+            }
         }
     }
     

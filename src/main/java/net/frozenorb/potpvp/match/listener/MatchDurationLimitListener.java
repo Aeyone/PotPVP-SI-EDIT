@@ -32,14 +32,18 @@ public final class MatchDurationLimitListener implements Listener {
 
             @Override
             public void run() {
-                if (match.getState() != MatchState.IN_PROGRESS) {
+                if (match.getState() == MatchState.ENDING || match.getState() == MatchState.TERMINATED) {
                     cancel();
+                    return;
+                }
+
+                if (match.getState() != MatchState.IN_PROGRESS) {
                     return;
                 }
 
                 // Very ugly to do it here, but I don't want to put another runnable per match
                 if (match.getKitType().getId().equals("SUMO")) {
-                    match.getTeams().forEach(t -> t.getAllMembers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(p -> {
+                    match.getTeams().forEach(t -> t.getAliveMembers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).filter(p -> match.isControllingPlayer(p.getUniqueId())).forEach(p -> {
                         p.setHealth(20);
                         p.setFoodLevel(20);
                         p.setSaturation(20);

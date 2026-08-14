@@ -1,5 +1,9 @@
 package net.frozenorb.potpvp.match.listener;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -30,10 +34,60 @@ import net.frozenorb.potpvp.match.MatchHandler;
 import net.frozenorb.potpvp.match.MatchState;
 import net.frozenorb.potpvp.match.MatchTeam;
 import net.frozenorb.potpvp.nametag.PotPvPNametagProvider;
+import net.frozenorb.potpvp.party.event.PartyDisbandEvent;
+import net.frozenorb.potpvp.party.event.PartyMemberKickEvent;
+import net.frozenorb.potpvp.party.event.PartyMemberLeaveEvent;
 import net.frozenorb.qlib.cuboid.Cuboid;
 import net.frozenorb.qlib.util.PlayerUtils;
 
 public final class MatchGeneralListener implements Listener {
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onSumoPlayerQuit(PlayerQuitEvent event) {
+        Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlayingOrSpectating(event.getPlayer());
+
+        if (match != null) {
+            match.withdrawSumoParticipant(event.getPlayer().getUniqueId(), false);
+        }
+    }
+
+    @EventHandler
+    public void onPartyMemberLeave(PartyMemberLeaveEvent event) {
+        withdrawSumoParticipant(event.getMember());
+    }
+
+    @EventHandler
+    public void onPartyMemberKick(PartyMemberKickEvent event) {
+        withdrawSumoParticipant(event.getMember());
+    }
+
+    @EventHandler
+    public void onPartyDisband(PartyDisbandEvent event) {
+        MatchHandler matchHandler = PotPvPSI.getInstance().getMatchHandler();
+        Map<Match, Set<UUID>> participantsByMatch = new HashMap<>();
+
+        for (UUID memberUuid : event.getParty().getMembers()) {
+            Player member = Bukkit.getPlayer(memberUuid);
+            if (member == null) {
+                continue;
+            }
+
+            Match match = matchHandler.getMatchPlayingOrSpectating(member);
+            if (match != null) {
+                participantsByMatch.computeIfAbsent(match, ignored -> new HashSet<>()).add(memberUuid);
+            }
+        }
+
+        participantsByMatch.forEach((match, participants) -> match.withdrawSumoParticipants(participants, true));
+    }
+
+    private void withdrawSumoParticipant(Player player) {
+        Match match = PotPvPSI.getInstance().getMatchHandler().getMatchPlayingOrSpectating(player);
+
+        if (match != null) {
+            match.withdrawSumoParticipant(player.getUniqueId(), true);
+        }
+    }
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
@@ -143,12 +197,18 @@ public final class MatchGeneralListener implements Listener {
                 if ((match.getKitType().getId().equals("SUMO") || match.getKitType().getId().equals("SPLEEF"))) {
                     if (to.getBlockY() <= bounds.getLowerY() && bounds.getLowerY() - to.getBlockY() <= 20) return; // let the player fall 10 blocks
                     eliminateOutOfBounds(match, player, to);
+                    if (match.getKitType().getId().equals("SUMO") && match.getState() == MatchState.COUNTDOWN) {
+                        return;
+                    }
                 }
 
                 player.teleport(arena.getSpectatorSpawn());
             } else {
                 if (match.getKitType().getId().equals("SUMO") || match.getKitType().getId().equals("SPLEEF")) { // if they left horizontally
                     eliminateOutOfBounds(match, player, to);
+                    if (match.getKitType().getId().equals("SUMO") && match.getState() == MatchState.COUNTDOWN) {
+                        return;
+                    }
                     player.teleport(arena.getSpectatorSpawn());
                 }
 
@@ -157,7 +217,9 @@ public final class MatchGeneralListener implements Listener {
         } else if (to.getBlockY() + 5 < arena.getSpectatorSpawn().getBlockY()) { // if the player is still in the arena bounds but fell down from the spawn point
             if (match.getKitType().getId().equals("SUMO")) {
                 eliminateOutOfBounds(match, player, to);
-                player.teleport(arena.getSpectatorSpawn());
+                if (match.getState() != MatchState.COUNTDOWN) {
+                    player.teleport(arena.getSpectatorSpawn());
+                }
             }
         }
     }
@@ -169,6 +231,10 @@ public final class MatchGeneralListener implements Listener {
         }
 
         MatchDeathMessageListener.playDeathLightning(match, location);
+        if (match.handleSumoRoundLoss(player)) {
+            return;
+        }
+
         match.markDead(player);
         match.addSpectator(player, null, true);
     }

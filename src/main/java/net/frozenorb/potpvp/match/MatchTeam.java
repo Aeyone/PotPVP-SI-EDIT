@@ -28,7 +28,7 @@ public final class MatchTeam {
     /**
      * All players who are currently alive.
      */
-    private final Set<UUID> aliveMembers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private volatile Set<UUID> aliveMembers = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     // convenience constructor for 1v1s, queues, etc
     public MatchTeam(UUID initialMember) {
@@ -47,6 +47,18 @@ public final class MatchTeam {
      */
     void markDead(UUID playerUuid) {
         aliveMembers.remove(playerUuid);
+    }
+
+    void resetAliveMembers(Collection<UUID> members) {
+        Set<UUID> replacement = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+        for (UUID member : members) {
+            if (allMembers.contains(member)) {
+                replacement.add(member);
+            }
+        }
+
+        aliveMembers = replacement;
     }
 
     /**

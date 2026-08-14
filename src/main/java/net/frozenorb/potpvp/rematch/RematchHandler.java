@@ -52,7 +52,7 @@ public final class RematchHandler {
 
     public void registerRematches(Match match) {
         // see Match#allowRematches
-        if (!match.isAllowRematches()) {
+        if (!match.isAllowRematches() || match.hasWithdrawnPlayers()) {
             return;
         }
 
