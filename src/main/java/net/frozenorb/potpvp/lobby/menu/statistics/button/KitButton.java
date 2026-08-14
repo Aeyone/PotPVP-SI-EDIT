@@ -42,9 +42,6 @@ public class KitButton extends Button {
             int elo = eloHandler.getElo(target, kitType);
             description.add(ChatColor.YELLOW + "Elo: " + (elo >= 1000 ? ChatColor.GREEN : ChatColor.RED) + elo);
         }
-        if (statisticsHandler.checkNull(target)) {
-            statisticsHandler.loadStatistics(target);
-        }
         description.add(ChatColor.YELLOW + "Wins: " + ChatColor.GREEN + (int)statisticsHandler.getStat(target, StatisticsHandler.Statistic.WINS, kitType.getId()));
         description.add(ChatColor.YELLOW + "Losses: " + ChatColor.RED + (int)statisticsHandler.getStat(target, StatisticsHandler.Statistic.LOSSES, kitType.getId()));
         description.add(ChatColor.YELLOW + "W/L Ratio: " + ChatColor.AQUA +  Math.round(statisticsHandler.getStat(target, StatisticsHandler.Statistic.WLR, kitType.getId()) * 100.0) / 100.0);

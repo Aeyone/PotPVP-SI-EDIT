@@ -26,28 +26,42 @@ public final class StatisticsMenu extends Menu {
     private static final Button BLACK_PANE = Button.fromItem(ItemBuilder.of(Material.STAINED_GLASS_PANE).data(DyeColor.BLACK.getData()).name(" ").build());
     private UUID target;
     private String matchId = null;
+    private String targetName;
 
     public StatisticsMenu(UUID target) {
-        setAutoUpdate(true);
-        this.StatisticsMenuInit(target);
+        this(target, null, null, true);
     }
 
     public StatisticsMenu(UUID target, String matchId) {
-        this.matchId = matchId;
-        setAutoUpdate(true);
-        this.StatisticsMenuInit(target);
+        this(target, matchId, null, true);
     }
+
+    private StatisticsMenu(UUID target, String matchId, String targetName, boolean loadIfMissing) {
+        this.matchId = matchId;
+        this.targetName = targetName;
+        setAutoUpdate(true);
+        this.StatisticsMenuInit(target, loadIfMissing);
+    }
+
+    public static StatisticsMenu forLoadedStatistics(UUID target, String targetName) {
+        return new StatisticsMenu(target, null, targetName, false);
+    }
+
     public void StatisticsMenuInit(UUID target) {
+        this.StatisticsMenuInit(target, true);
+    }
+
+    private void StatisticsMenuInit(UUID target, boolean loadIfMissing) {
         this.target = target;
         StatisticsHandler statisticsHandler = PotPvPSI.getInstance().getStatisticsHandler();
-        if (statisticsHandler.checkNull(target)) {
+        if (loadIfMissing && statisticsHandler.checkNull(target)) {
             statisticsHandler.loadStatistics(target);
         }
     }
 
     @Override
     public String getTitle(Player player) {
-        return ChatColor.GOLD.toString() + ChatColor.BOLD + UUIDUtils.name(target);
+        return ChatColor.GOLD.toString() + ChatColor.BOLD + (targetName == null ? UUIDUtils.name(target) : targetName);
     }
 
     @Override

@@ -111,12 +111,30 @@ public class StatisticsHandler implements Listener {
     }
     
     public void loadStatistics(UUID uuid) {
+        loadStatistics(uuid, UUIDUtils.name(uuid));
+    }
+
+    public void loadStatistics(UUID uuid, String username) {
         Document document = COLLECTION.find(new Document("_id", uuid.toString())).first();
         if (document == null) {
             document = new Document();
         }
-        
-        document.put("lastUsername", UUIDUtils.name(uuid));
+
+        document.put("lastUsername", username);
+        cacheStatistics(uuid, document);
+    }
+
+    public boolean loadStatisticsIfPresent(UUID uuid) {
+        Document document = COLLECTION.find(new Document("_id", uuid.toString())).first();
+        if (document == null) {
+            return false;
+        }
+
+        cacheStatistics(uuid, document);
+        return true;
+    }
+
+    private void cacheStatistics(UUID uuid, Document document) {
 
         final Document finalDocument = document;
         Map<String, Map<Statistic, Double>> subStatisticsMap = Maps.newHashMap();

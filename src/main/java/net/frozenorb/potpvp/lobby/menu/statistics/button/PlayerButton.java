@@ -37,9 +37,6 @@ public class PlayerButton extends Button {
 
 
         description.add(ChatColor.GRAY.toString() + ChatColor.STRIKETHROUGH + "----------------------");
-        if (statisticsHandler.checkNull(target)) {
-            statisticsHandler.loadStatistics(target);
-        }
         if (target.equals(player.getUniqueId())) {
             int globalElo = eloHandler.getGlobalElo(target);
             description.add(ChatColor.YELLOW + "Global Elo: " + (globalElo >= 1000 ? ChatColor.GREEN : ChatColor.RED) + globalElo);
