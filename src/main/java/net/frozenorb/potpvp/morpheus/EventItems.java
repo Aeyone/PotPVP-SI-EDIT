@@ -23,7 +23,7 @@ public final class EventItems {
         List<Game> game = GameQueue.INSTANCE.getCurrentGames();
 
         if (game.size() > 0) {
-            return ItemBuilder.of(Material.EMERALD).name(LEFT_ARROW + GOLD + BOLD + "Join An Event" + RIGHT_ARROW).build();
+            return ItemBuilder.of(Material.EMERALD_BLOCK).name(LEFT_ARROW + GOLD + BOLD + "Join An Event" + RIGHT_ARROW).build();
         }
 
         return null;

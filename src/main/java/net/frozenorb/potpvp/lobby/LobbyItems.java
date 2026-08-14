@@ -21,7 +21,7 @@ public final class LobbyItems {
     public static final ItemStack DISABLE_SPEC_MODE_ITEM = new ItemStack(Material.LEVER);
     public static final ItemStack MANAGE_ITEM = new ItemStack(Material.ANVIL);
     public static final ItemStack UNFOLLOW_ITEM = new ItemStack(Material.INK_SACK, 1, DyeColor.RED.getDyeData());
-    public static final ItemStack PLAYER_STATISTICS = new ItemStack(Material.SKULL_ITEM, 1, (byte) 3);
+    public static final ItemStack PLAYER_STATISTICS = new ItemStack(Material.EMERALD, 1, (byte) 3);
     public static final ItemStack SETTINGS_ITEM = new ItemStack(Material.ITEM_FRAME);
     public static final ItemStack FIGHT_WITH_BOT_ITEM = new ItemStack(Material.GOLD_SWORD);
 
@@ -41,7 +41,7 @@ public final class LobbyItems {
         );
 
         ItemUtils.setDisplayName(
-            ENABLE_SPEC_MODE_ITEM, 
+            ENABLE_SPEC_MODE_ITEM,
             LEFT_ARROW + 
             AQUA + BOLD + "Enable Spectator Mode" +
             RIGHT_ARROW
@@ -50,14 +50,14 @@ public final class LobbyItems {
         ItemUtils.setDisplayName(
             DISABLE_SPEC_MODE_ITEM, 
             LEFT_ARROW + 
-            RED + BOLD + "Disable Spectator Mode" +
+            AQUA + BOLD + "Disable Spectator Mode" +
             RIGHT_ARROW
         );
 
         ItemUtils.setDisplayName(
             MANAGE_ITEM, 
             LEFT_ARROW + 
-            GRAY + BOLD + "Manage Practice" +
+            GRAY + BOLD + "Manage PotPvP" +
             RIGHT_ARROW
         );
 

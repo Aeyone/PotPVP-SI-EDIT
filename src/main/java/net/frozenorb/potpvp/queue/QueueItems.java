@@ -15,10 +15,10 @@ import static org.bukkit.ChatColor.*;
 @UtilityClass
 public final class QueueItems {
 
-    public static final ItemStack JOIN_SOLO_UNRANKED_QUEUE_ITEM = new ItemStack(Material.IRON_SWORD);
+    public static final ItemStack JOIN_SOLO_UNRANKED_QUEUE_ITEM = new ItemStack(Material.EMPTY_MAP);
     public static final ItemStack LEAVE_SOLO_UNRANKED_QUEUE_ITEM = new ItemStack(Material.INK_SACK, 1, (byte) DyeColor.RED.getDyeData());
 
-    public static final ItemStack JOIN_SOLO_RANKED_QUEUE_ITEM = new ItemStack(Material.DIAMOND_SWORD);
+    public static final ItemStack JOIN_SOLO_RANKED_QUEUE_ITEM = new ItemStack(Material.EYE_OF_ENDER);
     public static final ItemStack LEAVE_SOLO_RANKED_QUEUE_ITEM = new ItemStack(Material.INK_SACK, 1, (byte) DyeColor.RED.getDyeData());
 
     public static final ItemStack JOIN_PARTY_UNRANKED_QUEUE_ITEM = new ItemStack(Material.IRON_SWORD);
@@ -31,15 +31,15 @@ public final class QueueItems {
         ItemUtils.setDisplayName(
             JOIN_SOLO_UNRANKED_QUEUE_ITEM, 
             LEFT_ARROW + 
-            GREEN.toString() + BOLD + "Join " + 
-            GRAY.toString() + BOLD + "Unranked " + 
-            GREEN.toString() + BOLD + "Queue" + 
+            AQUA.toString() + BOLD + "Join " +
+            AQUA.toString() + BOLD + "Unranked " +
+            AQUA.toString() + BOLD + "Queue" +
             RIGHT_ARROW
         );
         ItemUtils.setDisplayName(
             LEAVE_SOLO_UNRANKED_QUEUE_ITEM, 
             LEFT_ARROW + 
-            RED.toString() + BOLD + "Leave Queue" + 
+            RED.toString() + BOLD + "Leave Unranked Queue" +
             RIGHT_ARROW
         );
 
@@ -54,7 +54,7 @@ public final class QueueItems {
         ItemUtils.setDisplayName(
             LEAVE_SOLO_RANKED_QUEUE_ITEM, 
             LEFT_ARROW + 
-            RED.toString() + BOLD + "Leave Queue" + 
+            RED.toString() + BOLD + "Leave Ranked Queue" +
             RIGHT_ARROW
         );
 

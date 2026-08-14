@@ -20,7 +20,7 @@ public final class HelpCommand {
 
     private static final List<String> HELP_MESSAGE_HEADER = ImmutableList.of(
         ChatColor.GOLD + PotPvPLang.LONG_LINE,
-        "§9§lPractice Help",
+        "§9§lPotPvP Help",
         ChatColor.GOLD + PotPvPLang.LONG_LINE,
         "§6§lRemember: §eMost things are clickable!",
         ""

@@ -24,8 +24,8 @@ public class EventTask extends BukkitRunnable {
                 Game game = GameQueue.INSTANCE.getCurrentGame(player);
 
                 if (games.isEmpty()) {
-                    if (player.getInventory().contains(Material.EMERALD)) {
-                        player.getInventory().remove(Material.EMERALD);
+                    if (player.getInventory().contains(Material.EMERALD_BLOCK)) {
+                        player.getInventory().remove(Material.EMERALD_BLOCK);
                     }
                     continue;
                 }
@@ -39,7 +39,7 @@ public class EventTask extends BukkitRunnable {
             } else {
                 Game game = GameQueue.INSTANCE.getCurrentGame(player);
                 if (game != null && game.getPlayers().contains(player) && player.getInventory().contains(EventItems.getEventItem())) {
-                    player.getInventory().remove(Material.EMERALD);
+                    player.getInventory().remove(Material.EMERALD_BLOCK);
                 }
             }
 

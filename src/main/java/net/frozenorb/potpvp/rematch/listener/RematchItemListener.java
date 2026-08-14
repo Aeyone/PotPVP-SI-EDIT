@@ -33,13 +33,15 @@ public final class RematchItemListener extends ItemListener {
                 SettingHandler settingHandler = PotPvPSI.getInstance().getSettingHandler();
 
                 if (settingHandler.getSetting(player, Setting.SELECT_MAP)) {
-                    DuelCommand.selectArena(player, target, rematchData.getKitType());
+                    DuelCommand.selectArena(player, target, rematchData.getKitType(), () -> {
+                        InventoryUtils.resetInventoryDelayed(player);
+                        InventoryUtils.resetInventoryDelayed(target);
+                    });
                 } else {
                     DuelCommand.duel(player, target, rematchData.getKitType());
+                    InventoryUtils.resetInventoryDelayed(player);
+                    InventoryUtils.resetInventoryDelayed(target);
                 }
-
-                InventoryUtils.resetInventoryDelayed(player);
-                InventoryUtils.resetInventoryDelayed(target);
             }
         });
 

@@ -145,8 +145,13 @@ public final class DuelCommand {
     }
 
     public static void selectArena(Player sender, Player target, KitType kitType) {
+        selectArena(sender, target, kitType, () -> { });
+    }
+
+    public static void selectArena(Player sender, Player target, KitType kitType, Runnable afterDuel) {
         getArenas(sender, kitType, allArenas -> {
             duel(sender, target, kitType, getRandomArenaSchematic(allArenas), allArenas.size() == 1 ? "EXACT" : "RANDOM");
+            afterDuel.run();
         });
     }
 

@@ -56,7 +56,7 @@ class GameStartTask(private val plugin: JavaPlugin, game: Game) {
                         ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "█████" + ChatColor.GRAY + "█" + " " + ChatColor.GOLD + "[${game.event.getName()} Event]",
                         ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "█" + ChatColor.GRAY + "█████" + " " + game.host.displayName + ChatColor.GRAY + " is hosting an event!",
                         ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "████" + ChatColor.GRAY + "██" + " " + ChatColor.GRAY + "Starts in " + ChatColor.AQUA + (formatIntoDetailedString(((startsAt + 500 - System.currentTimeMillis()) / 1000).toInt())),
-                        ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "█" + ChatColor.GRAY + "█████" + " " + ChatColor.GRAY + "Join with the ${ChatColor.GREEN}emerald${ChatColor.GRAY} in your hotbar.",
+                        ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "█" + ChatColor.GRAY + "█████" + " " + ChatColor.GRAY + "Join with the ${ChatColor.GREEN}emerald block${ChatColor.GRAY} in your hotbar.",
                         ChatColor.GRAY.toString() + "█" + ChatColor.GOLD + "█████" + ChatColor.GRAY + "█" + " " + ChatColor.GRAY + ChatColor.ITALIC + "Event Type: (" + StringUtils.join(game.parameters.map { it.getDisplayName() }, ", ") + ")",
                         ChatColor.GRAY.toString() + "███████",
                         "")

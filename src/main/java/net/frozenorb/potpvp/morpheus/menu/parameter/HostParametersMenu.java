@@ -53,7 +53,7 @@ public class HostParametersMenu extends Menu {
 
             @Override
             public Material getMaterial(Player player) {
-                return Material.EMERALD;
+                return Material.EMERALD_BLOCK;
             }
 
             @Override

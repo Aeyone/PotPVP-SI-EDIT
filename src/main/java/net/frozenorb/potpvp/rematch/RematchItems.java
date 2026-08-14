@@ -17,8 +17,8 @@ import static org.bukkit.ChatColor.GREEN;
 public final class RematchItems {
 
     public static final ItemStack REQUEST_REMATCH_ITEM = new ItemStack(Material.DIAMOND);
-    public static final ItemStack SENT_REMATCH_ITEM = new ItemStack(Material.DIAMOND);
-    public static final ItemStack ACCEPT_REMATCH_ITEM = new ItemStack(Material.DIAMOND);
+    public static final ItemStack SENT_REMATCH_ITEM = new ItemStack(Material.EMERALD);
+    public static final ItemStack ACCEPT_REMATCH_ITEM = new ItemStack(Material.EMERALD);
 
     static {
         ItemUtils.setDisplayName(REQUEST_REMATCH_ITEM, LEFT_ARROW + DARK_PURPLE.toString() + BOLD + "Request Rematch" + RIGHT_ARROW);

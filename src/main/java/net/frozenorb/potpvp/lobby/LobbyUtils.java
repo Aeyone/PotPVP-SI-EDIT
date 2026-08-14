@@ -126,41 +126,41 @@ public final class LobbyUtils {
                 if (target != null) {
                     if (duelHandler.findInvite(player, target) != null) {
                         // if we've sent an invite to them
-                        inventory.setItem(2, RematchItems.SENT_REMATCH_ITEM);
+                        inventory.setItem(0, RematchItems.SENT_REMATCH_ITEM);
                     } else if (duelHandler.findInvite(target, player) != null) {
                         // if they've sent us an invite
-                        inventory.setItem(2, RematchItems.ACCEPT_REMATCH_ITEM);
+                        inventory.setItem(0, RematchItems.ACCEPT_REMATCH_ITEM);
                     } else {
                         // if no one has sent an invite
-                        inventory.setItem(2, RematchItems.REQUEST_REMATCH_ITEM);
+                        inventory.setItem(0, RematchItems.REQUEST_REMATCH_ITEM);
                     }
                 }
             }
 
             if (queueHandler.isQueuedRanked(player.getUniqueId())) {
-                inventory.setItem(8, QueueItems.LEAVE_SOLO_UNRANKED_QUEUE_ITEM);
+                inventory.setItem(8, QueueItems.LEAVE_SOLO_RANKED_QUEUE_ITEM);
             } else if (queueHandler.isQueuedUnranked(player.getUniqueId())) {
 //                inventory.setItem(1, LobbyItems.FIGHT_WITH_BOT_ITEM);
-                inventory.setItem(8, QueueItems.LEAVE_SOLO_RANKED_QUEUE_ITEM);
+                inventory.setItem(8, QueueItems.LEAVE_SOLO_UNRANKED_QUEUE_ITEM);
             } else {
-                inventory.setItem(0, QueueItems.JOIN_SOLO_UNRANKED_QUEUE_ITEM);
-                inventory.setItem(1, QueueItems.JOIN_SOLO_RANKED_QUEUE_ITEM);
+                inventory.setItem(1, QueueItems.JOIN_SOLO_UNRANKED_QUEUE_ITEM);
+                inventory.setItem(2, QueueItems.JOIN_SOLO_RANKED_QUEUE_ITEM);
                 inventory.setItem(4, LobbyItems.ENABLE_SPEC_MODE_ITEM);
 //                inventory.setItem(6, EventItems.EVENTS_ITEM);
-                inventory.setItem(21, LobbyItems.PLAYER_STATISTICS);
-                inventory.setItem(23, LobbyItems.SETTINGS_ITEM);
-                inventory.setItem(8, KitItems.OPEN_EDITOR_ITEM);
+                inventory.setItem(6, LobbyItems.PLAYER_STATISTICS);
+//                inventory.setItem(23, LobbyItems.SETTINGS_ITEM);
+                inventory.setItem(7, KitItems.OPEN_EDITOR_ITEM);
 
                 ItemStack eventItem = EventItems.getEventItem();
 
                 if (player.hasPermission("potpvp.admin")) {
                     if (eventItem != null) {
-                        inventory.setItem(6, eventItem);
+                        inventory.setItem(5, eventItem);
                     }
-                    inventory.setItem(7, LobbyItems.MANAGE_ITEM);
+                    inventory.setItem(8, LobbyItems.MANAGE_ITEM);
                 } else {
                     if (eventItem != null) {
-                        inventory.setItem(7, eventItem);
+                        inventory.setItem(8, eventItem);
                     }
                 }
             }
